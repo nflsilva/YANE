@@ -1,6 +1,9 @@
 #include <iostream>
 #include <fstream>
 #include <cstdint>
+#include <stdio.h>
+#include <string.h>
+
 
 typedef uint8_t byte_t;
 

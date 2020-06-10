@@ -6,15 +6,15 @@ using namespace std;
 class cartridge_header
 {
 private:
-	byte_t name[4];
-	byte_t n_prg_banks[1];
-	byte_t n_chr_banks[1];
-	byte_t mapper1[1];
-	byte_t mapper2[1];
-	byte_t prg_ram_size[1];
-	byte_t tv_system1[1];
-	byte_t tv_system2[1];
-	byte_t unused[5];
+	byte_t _name[4];
+	byte_t _n_prg_banks[1];
+	byte_t _n_chr_banks[1];
+	byte_t _mapper1[1];
+	byte_t _mapper2[1];
+	byte_t _prg_ram_size[1];
+	byte_t _tv_system1[1];
+	byte_t _tv_system2[1];
+	byte_t _unused[5];
 	
 	
 	
