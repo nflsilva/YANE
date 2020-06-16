@@ -1,6 +1,7 @@
 #pragma once
 #include "yane.h"
 
+
 class i_mapper
 {
 public:

@@ -7,5 +7,7 @@
 
 typedef uint8_t byte_t;
 
+typedef int8_t i8_t;
 typedef uint8_t ui8_t;
 typedef uint16_t ui16_t;
+typedef uint32_t ui32_t;
