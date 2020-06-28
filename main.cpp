@@ -34,11 +34,8 @@ void run_nestest(r6502* cpu){
 	std::ifstream infile(file_name);
 	std::string line;
 	
-	int nc = 100000;
-	while(nc > 0){
+	while(std::getline(infile, line)){
 		
-		
-		std::getline(infile, line);
 		ui8_t op = (ui8_t)strtol(line.substr(6, 2).c_str(), NULL, 16); 
 		ui16_t pc = (ui16_t)strtol(line.substr(0, 4).c_str(), NULL, 16); 
 		ui8_t a = (ui8_t)strtol(line.substr(48 + 2, 2).c_str(), NULL, 16);  
@@ -90,7 +87,6 @@ void run_nestest(r6502* cpu){
 		
 		
 		//std::this_thread::sleep_for (std::chrono::milliseconds(100));
-		nc--;
 	}
 	
 }

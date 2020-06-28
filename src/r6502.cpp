@@ -28,146 +28,6 @@ _total_cycles(0)
 
 
 {
-	
-	/*
-	cc_01_operations[0] = &r6502::ora_operation_operation;
-	cc_01_operations[1] = &r6502::and_operation;
-	cc_01_operations[2] = &r6502::eor_operation;
-	cc_01_operations[3] = &r6502::adc_operation;
-	cc_01_operations[4] = &r6502::sta_operation;
-	cc_01_operations[5] = &r6502::lda_operation;
-	cc_01_operations[6] = &r6502::cmp_operation;
-	cc_01_operations[7] = &r6502::sbc_operation;
-	
-	cc_01_addressings[0] = &r6502::x_indexed_indirect_addressing;
-	cc_01_addressings[1] = &r6502::zeropage_addressing;
-	cc_01_addressings[2] = &r6502::immediate_addressing;
-	cc_01_addressings[3] = &r6502::absolute_addressing;
-	cc_01_addressings[4] = &r6502::indirect_y_indexed_addressing;
-	cc_01_addressings[5] = &r6502::zeropage_x_indexed_addressing;
-	cc_01_addressings[6] = &r6502::absolute_y_indexed_addressing;
-	cc_01_addressings[7] = &r6502::absolute_x_indexed_addressing;
-	
-	
-	
-	cc_10_operations[0] = &r6502::asl_operation;
-	cc_10_operations[1] = &r6502::rol_operation;
-	cc_10_operations[2] = &r6502::lsr_operation;
-	cc_10_operations[3] = &r6502::ror_operation;
-	cc_10_operations[4] = &r6502::stx_operation;
-	cc_10_operations[5] = &r6502::ldx_operation;
-	cc_10_operations[6] = &r6502::dec_operation;
-	cc_10_operations[7] = &r6502::inc_operation;
-	
-	cc_10_addressings[0] = &r6502::immediate_addressing;
-	cc_10_addressings[1] = &r6502::zeropage_addressing;
-	cc_10_addressings[2] = &r6502::accumulator_addressing;
-	cc_10_addressings[3] = &r6502::absolute_addressing;
-	cc_10_addressings[5] = &r6502::zeropage_x_indexed_addressing;
-	cc_10_addressings[7] = &r6502::absolute_x_indexed_addressing;
-	
-	
-	
-	cc_00_operations[1] = &r6502::bit_operation;
-	cc_00_operations[2] = &r6502::jmp_operation;
-	cc_00_operations[3] = &r6502::jmp_operation;
-	cc_00_operations[4] = &r6502::sty_operation;
-	cc_00_operations[5] = &r6502::ldy_operation;
-	cc_00_operations[6] = &r6502::cpy_operation;
-	cc_00_operations[7] = &r6502::cpx_operation;
-	
-	cc_00_addressings[0] = &r6502::immediate_addressing;
-	cc_00_addressings[1] = &r6502::zeropage_addressing;
-	cc_00_addressings[3] = &r6502::absolute_addressing;
-	cc_00_addressings[5] = &r6502::zeropage_x_indexed_addressing;
-	cc_00_addressings[7] = &r6502::absolute_x_indexed_addressing;
-	
-	
-	
-	ex_operations = {
-		{0x00, &r6502::brk_operation_operation},
-		{0x20, &r6502::jsr_operation},
-		{0x40, &r6502::rti_operation},
-		{0x60, &r6502::rts_operation},
-		
-		{0x10, &r6502::bpl_operation},
-		{0x30, &r6502::bmi_operation},
-		{0x50, &r6502::bvc_operation},
-		{0x70, &r6502::bvs_operation},
-		{0x90, &r6502::bcc_operation},
-		{0xB0, &r6502::bcs_operation},
-		{0xD0, &r6502::bne_operation},
-		{0xF0, &r6502::beq_operation},
-		
-		{0x08, &r6502::php_operation},
-		{0x28, &r6502::plp_operation},
-		{0x48, &r6502::pha_operation},
-		{0x68, &r6502::pla_operation},
-		{0x88, &r6502::dey_operation},
-		{0xA8, &r6502::tay_operation},
-		{0xC8, &r6502::iny_operation},
-		{0xE8, &r6502::inx_operation},
-		
-		{0x18, &r6502::clc_operation},
-		{0x38, &r6502::sec_operation},
-		{0x58, &r6502::cli_operation},
-		{0x78, &r6502::sei_operation},
-		{0x98, &r6502::tya_operation},
-		{0xB8, &r6502::clv_operation},
-		{0xD8, &r6502::cld_operation},
-		{0xF8, &r6502::sed_operation},
-		
-		{0x8A, &r6502::txa_operation},
-		{0x9A, &r6502::txs_operation},
-		{0xAA, &r6502::tax_operation},
-		{0xBA, &r6502::tsx_operation},
-		{0xCA, &r6502::dex_operation},
-		{0xEA, &r6502::nop_operation},
-		
-		{0x6C, &r6502::jmp_operation},
-
-	};
-	
-	ex_addressings = {
-		{0x00, &r6502::implied_addressing},
-		{0x20, &r6502::absolute_addressing},
-		{0x40, &r6502::implied_addressing},
-		{0x60, &r6502::implied_addressing},
-		
-		{0x10, &r6502::relative_addressing},
-		{0x30, &r6502::relative_addressing},
-		{0x50, &r6502::relative_addressing},
-		{0x70, &r6502::relative_addressing},
-		{0x90, &r6502::relative_addressing},
-		{0xB0, &r6502::relative_addressing},
-		{0xD0, &r6502::relative_addressing},
-		{0xF0, &r6502::relative_addressing},
-		
-		{0x6C, &r6502::indirect_addressing},
-		
-	};
-	
-	
-	il_operations[0] = &r6502::slo_operation;
-	il_operations[1] = &r6502::rla_operation;
-	il_operations[2] = &r6502::sre_operation;
-	il_operations[3] = &r6502::rra_operation;
-	il_operations[4] = &r6502::sax_operation;
-	il_operations[5] = &r6502::lax_operation;
-	il_operations[6] = &r6502::dcp_operation;
-	il_operations[7] = &r6502::isc_operation;
-	
-	il_addressings[0] = &r6502::indirect_y_indexed_addressing;
-	il_addressings[1] = &r6502::zeropage_addressing;
-	il_addressings[2] = &r6502::immediate_addressing;
-	il_addressings[3] = &r6502::absolute_addressing;
-	il_addressings[4] = &r6502::x_indexed_indirect_addressing;
-	il_addressings[5] = &r6502::zeropage_x_indexed_addressing;
-	il_addressings[6] = &r6502::absolute_y_indexed_addressing;
-	il_addressings[7] = &r6502::absolute_x_indexed_addressing;
-	
-	 * */
-	 
 	using a = r6502;
 	r6502_instruction ins[16][16] = 	
 	{
@@ -198,7 +58,7 @@ _total_cycles(0)
 			{ &a::nop_operation,	&a::zeropage_x_indexed_addressing},
 			{ &a::ora_operation,	&a::zeropage_x_indexed_addressing},
 			{ &a::asl_operation,	&a::zeropage_x_indexed_addressing},
-			{ &a::stp_operation,	&a::zeropage_x_indexed_addressing},
+			{ &a::slo_operation,	&a::zeropage_x_indexed_addressing},
 			{ &a::clc_operation,	&a::implied_addressing},
 			{ &a::ora_operation,	&a::absolute_y_indexed_addressing},
 			{ &a::nop_operation,	&a::implied_addressing},
@@ -460,7 +320,6 @@ _total_cycles(0)
 			{ &a::inc_operation,	&a::absolute_x_indexed_addressing},
 			{ &a::isc_operation,	&a::absolute_x_indexed_addressing}},
 	};
-	
 	for(int r = 0; r < 16; r++){
 		for(int c = 0; c < 16; c++){
 			instructions[r][c] = ins[r][c];
@@ -494,10 +353,6 @@ bool r6502::compare_state(ui16_t register_PC, ui8_t register_A, ui8_t register_X
 }
 
 void r6502::clock(){
-
-	if(_register_PC == 0xc6bd){
-		printf("");
-	}
 	
 	if(1) {
 		ui8_t opcode = read(_register_PC++);
@@ -511,54 +366,6 @@ void r6502::clock(){
 		r6502_instruction instruction = instructions[row_index][col_index];
 		addressing = instruction.addressing;
 		operation = instruction.operation;
-		
-		/*
-		auto op_search = ex_operations.find(opcode);
-		if(op_search != ex_operations.end()){
-			operation = ex_operations[opcode];
-			
-			auto addressing_search = ex_addressings.find(opcode);
-			if(addressing_search != ex_addressings.end()){
-				addressing = ex_addressings[opcode];
-			}
-		}
-		else {
-			
-			//opcode format AAABBBCC;
-			ui8_t aaa_opcode = (opcode >> 5) & 0x07;
-			ui8_t bbb_opcode = (opcode >> 2) & 0x07;
-			ui8_t cc_opcode = opcode & 0x03;
-		
-			if(cc_opcode == 0x01){
-				addressing = cc_01_addressings[bbb_opcode];
-				operation = cc_01_operations[aaa_opcode];
-			}
-			else if(cc_opcode == 0x02){
-				operation = cc_10_operations[aaa_opcode];
-				
-				if((aaa_opcode == 0x04 || aaa_opcode == 0x05) && bbb_opcode == 0x05) {
-					addressing = &r6502::zeropage_y_indexed_addressing;
-				}
-				else if(aaa_opcode == 0x05 && bbb_opcode == 0x07) {
-					addressing = &r6502::absolute_y_indexed_addressing;
-				}
-				else {
-					addressing = cc_10_addressings[bbb_opcode];
-				}
-			}
-			else {
-				operation = cc_00_operations[aaa_opcode];
-				if(aaa_opcode == 0x03){
-					addressing = &r6502::absolute_addressing;
-				}
-				else {
-					addressing = cc_00_addressings[bbb_opcode];
-				}
-			}
-			
-			//std::cout << std::hex << ((int)aaa_opcode) << " " << ((int)cc_opcode) << std::endl;
-		}
-		*/
 		
 		_is_implied = false;
 		if(addressing != NULL){
@@ -577,8 +384,6 @@ void r6502::clock(){
 		
 	}
 	_operation_cycles--;
-	
-	//std::cout << " " << std::endl;
 	
 	
 
@@ -1016,9 +821,11 @@ ui8_t r6502::plp_operation(){
 }
 
 ui8_t r6502::rol_operation(){
-	_flag_C = _operand_value & 0x80;
-	_operand_value <<= 1;
-	_operand_value |= (_flag_C ? 0x01 : 0x00);
+	
+	ui16_t result = (_operand_value << 1) | (_flag_C ? 0x01 : 0x00);
+	_flag_C = result & 0xFF00;
+	_operand_value = result;
+	
 
 	update_flag_N(_operand_value);
 	update_flag_Z(_operand_value);
@@ -1135,6 +942,7 @@ ui8_t r6502::tya_operation(){
 }
 
 
+//Illegal Opcodes
 ui8_t r6502::anc_operation(){
 	return 0;
 }
@@ -1152,26 +960,37 @@ ui8_t r6502::axs_operation(){
 }
 
 ui8_t r6502::dcp_operation(){
+	dec_operation();
+	cmp_operation();
 	return 0;
 }
 ui8_t r6502::isc_operation(){
+	inc_operation();
+	sbc_operation();
 	return 0;
 }
 ui8_t r6502::las_operation(){
 	return 0;
 }
 ui8_t r6502::lax_operation(){
+	lda_operation();
+	ldx_operation();
 	return 0;
 }
 
 ui8_t r6502::rla_operation(){
+	rol_operation();
+	and_operation();
 	return 0;
 }
 ui8_t r6502::rra_operation(){
+	ror_operation();
+	adc_operation();
 	return 0;
 }
 
 ui8_t r6502::sax_operation(){
+	write(_operand_address, _register_A & _register_X);
 	return 0;
 }
 ui8_t r6502::shx_operation(){
@@ -1181,9 +1000,13 @@ ui8_t r6502::shy_operation(){
 	return 0;
 }
 ui8_t r6502::sre_operation(){
+	lsr_operation();
+	eor_operation();
 	return 0;
 }
 ui8_t r6502::slo_operation(){
+	asl_operation();
+	ora_operation();
 	return 0;
 }
 

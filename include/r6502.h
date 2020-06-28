@@ -163,6 +163,7 @@ private:
 	ui8_t txs_operation(); // X -> S
 	ui8_t tya_operation(); // Y -> A
 	
+	
 	//Illegal Opcodes
 	ui8_t stp_operation();
 	
@@ -206,22 +207,6 @@ private:
 	ui8_t perform_branch();
 	
 	r6502_instruction instructions[16][16];
-
-	
-	/*
-	ui8_t (r6502::* cc_00_operations[8])(void);
-	ui8_t (r6502::* cc_01_operations[8])(void);
-	ui8_t (r6502::* cc_10_operations[8])(void);
-	ui8_t (r6502::* il_operations[8])(void);
-	std::unordered_map<ui8_t, ui8_t (r6502::*)(void)> ex_operations;
-	
-	ui8_t (r6502::* cc_00_addressings[8])(void);
-	ui8_t (r6502::* cc_01_addressings[8])(void);
-	ui8_t (r6502::* cc_10_addressings[8])(void);
-	ui8_t (r6502::* il_addressings[8])(void);
-	std::unordered_map<ui8_t, ui8_t (r6502::*)(void)> ex_addressings;
-	*/
-	
 	
 
 
