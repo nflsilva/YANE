@@ -1,4 +1,4 @@
-#include "include/mapper000.h"
+#include "mapper000.hpp"
 
 
 mapper000::mapper000(ui8_t n_prg_banks) : n_prg_banks(n_prg_banks){

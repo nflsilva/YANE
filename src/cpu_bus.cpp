@@ -1,4 +1,4 @@
-#include "include/cpu_bus.h"
+#include "cpu_bus.hpp"
 
 cpu_bus::cpu_bus(cartridge* c, ram* r) : _cartridge(c), _ram(r) {
 }

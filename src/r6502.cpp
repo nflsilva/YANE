@@ -1,4 +1,4 @@
-#include "include/r6502.h"
+#include "r6502.hpp"
 
 
 r6502::r6502(cpu_bus* bus) : 
@@ -331,26 +331,7 @@ _total_cycles(0)
 r6502::~r6502(){
 }
 
-bool r6502::compare_state(ui16_t register_PC, ui8_t register_A, ui8_t register_X, ui8_t register_Y, ui8_t state, ui8_t register_S, ui8_t cycles){
-	ui8_t _state = 
-	(_flag_N ? 0x80: 0x00) | 
-	(_flag_V ? 0x40: 0x00) | 
-	(_flag_U ? 0x20: 0x00) |
-	(_flag_B ? 0x10: 0x00) |
-	(_flag_D ? 0x08: 0x00) |
-	(_flag_I ? 0x04: 0x00) |
-	(_flag_Z ? 0x02: 0x00) |
-	(_flag_C ? 0x01: 0x00);
-	
-	bool pc = _register_PC == register_PC;
-	bool a = _register_A == register_A;
-	bool x = _register_X == register_X;
-	bool y = _register_Y == register_Y;
-	bool p = state == _state;
-	bool s = _register_S == register_S;
-	
-	return pc && a && x && y && p && s;
-}
+
 
 void r6502::clock(){
 	
@@ -387,63 +368,6 @@ void r6502::clock(){
 	
 	
 
-}
-
-void r6502::debug(){
-	
-	std::stringstream stream;
-	stream << std::hex << _register_PC;
-	std::string debug_string = "[" + stream.str() + "]";
-	
-	stream.str(std::string());
-	stream << std::hex << ((int)read(_register_PC));
-	debug_string += " " + stream.str();
-	
-	stream.str(std::string());
-	stream << std::hex << ((int)_register_A);
-	debug_string += " A:" + stream.str();
-	
-	stream.str(std::string());
-	stream << std::hex << ((int)_register_X);
-	debug_string += " X:" + stream.str();
-	
-	stream.str(std::string());
-	stream << std::hex << ((int)_register_Y);
-	debug_string += " Y:" + stream.str();
-	
-	int state = 
-	(_flag_N ? 0x80: 0x00) | 
-	(_flag_V ? 0x40: 0x00) | 
-	(_flag_U ? 0x20: 0x00) |
-	(_flag_B ? 0x10: 0x00) |
-	(_flag_D ? 0x08: 0x00) |
-	(_flag_I ? 0x04: 0x00) |
-	(_flag_Z ? 0x02: 0x00) |
-	(_flag_C ? 0x01: 0x00);
-	
-	stream.str(std::string());
-	stream << std::hex << state;
-	debug_string += " P:" + stream.str();
-	
-	stream.str(std::string());
-	stream << std::hex << ((int)_register_S);
-	debug_string += " SP:" + stream.str();
-	
-
-	std::cout << debug_string
-	<< " CYC:" << 0
-	<< " \t "
-	<< " N:" << int(_flag_N)
-	<< " V:" << int(_flag_V)
-	<< " U:" << int(_flag_U)
-	<< " B:" << int(_flag_B)
-	<< " D:" << int(_flag_D)
-	<< " I:" << int(_flag_I)
-	<< " Z:" << int(_flag_Z)
-	<< " C:" << int(_flag_C)
-
-	<< std::endl;
-	
 }
 
 ui8_t r6502::read(ui16_t address) {
@@ -1023,7 +947,6 @@ ui8_t r6502::stp_operation(){
 
 
 
-
 void r6502::update_flag_N(ui8_t data){
 	_flag_N = data & 0x80;
 }
@@ -1051,4 +974,83 @@ ui8_t r6502::perform_branch(){
 	_register_PC = _operand_address;
 	return cycles + 1;
 }
+
+
+bool r6502::compare_state(ui16_t register_PC, ui8_t register_A, ui8_t register_X, ui8_t register_Y, ui8_t state, ui8_t register_S, ui8_t cycles){
+	ui8_t _state = 
+	(_flag_N ? 0x80: 0x00) | 
+	(_flag_V ? 0x40: 0x00) | 
+	(_flag_U ? 0x20: 0x00) |
+	(_flag_B ? 0x10: 0x00) |
+	(_flag_D ? 0x08: 0x00) |
+	(_flag_I ? 0x04: 0x00) |
+	(_flag_Z ? 0x02: 0x00) |
+	(_flag_C ? 0x01: 0x00);
+	
+	bool pc = _register_PC == register_PC;
+	bool a = _register_A == register_A;
+	bool x = _register_X == register_X;
+	bool y = _register_Y == register_Y;
+	bool p = state == _state;
+	bool s = _register_S == register_S;
+	
+	return pc && a && x && y && p && s;
+}
+void r6502::debug(){
+	
+	std::stringstream ss;
+	ss << std::hex << _register_PC;
+	std::string debug_string = "[" + ss.str() + "]";
+	
+	ss.str(std::string());
+	ss << std::hex << ((int)read(_register_PC));
+	debug_string += " " + ss.str();
+	
+	ss.str(std::string());
+	ss << std::hex << ((int)_register_A);
+	debug_string += " A:" + ss.str();
+	
+	ss.str(std::string());
+	ss << std::hex << ((int)_register_X);
+	debug_string += " X:" + ss.str();
+	
+	ss.str(std::string());
+	ss << std::hex << ((int)_register_Y);
+	debug_string += " Y:" + ss.str();
+	
+	int state = 
+	(_flag_N ? 0x80: 0x00) | 
+	(_flag_V ? 0x40: 0x00) | 
+	(_flag_U ? 0x20: 0x00) |
+	(_flag_B ? 0x10: 0x00) |
+	(_flag_D ? 0x08: 0x00) |
+	(_flag_I ? 0x04: 0x00) |
+	(_flag_Z ? 0x02: 0x00) |
+	(_flag_C ? 0x01: 0x00);
+	
+	ss.str(std::string());
+	ss << std::hex << state;
+	debug_string += " P:" + ss.str();
+	
+	ss.str(std::string());
+	ss << std::hex << ((int)_register_S);
+	debug_string += " SP:" + ss.str();
+	
+
+	std::cout << debug_string
+	<< " CYC:" << 0
+	<< " \t "
+	<< " N:" << int(_flag_N)
+	<< " V:" << int(_flag_V)
+	<< " U:" << int(_flag_U)
+	<< " B:" << int(_flag_B)
+	<< " D:" << int(_flag_D)
+	<< " I:" << int(_flag_I)
+	<< " Z:" << int(_flag_Z)
+	<< " C:" << int(_flag_C)
+
+	<< std::endl;
+	
+}
+
 

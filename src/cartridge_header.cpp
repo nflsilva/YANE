@@ -1,4 +1,4 @@
-#include "include/cartridge_header.h"
+#include "cartridge_header.hpp"
 
 cartridge_header::cartridge_header(ifstream* file){	
 	file->read((char*)_name, 4);

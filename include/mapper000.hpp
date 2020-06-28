@@ -1,5 +1,5 @@
 #pragma once
-#include "i_mapper.h"
+#include "i_mapper.hpp"
 
 class mapper000 : public i_mapper
 {

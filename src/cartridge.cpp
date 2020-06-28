@@ -1,4 +1,4 @@
-#include "include/cartridge.h"
+#include "cartridge.hpp"
 
 cartridge::cartridge(char* file_name){
 	ifstream fd (file_name, std::ifstream::binary);

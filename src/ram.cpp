@@ -1,4 +1,4 @@
-#include "include/ram.h"
+#include "ram.hpp"
 
 ram::ram(ui16_t size){
 	_data = (ui8_t*)malloc(size * sizeof(ui8_t));

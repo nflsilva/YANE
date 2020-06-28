@@ -1,9 +1,9 @@
 #pragma once
 
-#include "yane.h"
-#include "cartridge_header.h"
-#include "i_mapper.h"
-#include "mapper000.h"
+#include "yane.hpp"
+#include "cartridge_header.hpp"
+#include "i_mapper.hpp"
+#include "mapper000.hpp"
 
 
 #define UNUSED_SIZE 512

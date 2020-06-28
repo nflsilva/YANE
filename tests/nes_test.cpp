@@ -1,42 +1,33 @@
-#include "include/yane.h"
+#include "nes_test.hpp"
 
-#include <thread>
-#include <chrono>
-
-#include "include/cartridge.h"
-#include "include/ram.h"
-#include "include/cpu_bus.h"
-#include "include/r6502.h"
-
-
-void run_nestest(r6502* cpu);
-
-int main(int argc, char **argv){
-	
-	char* file_name = (char*)"/mnt/storage/Extra/CodeLiteWorkspaces/CodeLiteRootWorkspace/YANE/resources/nestest.nes";
-	
+nes_test::nes_test()
+{	
+	char* file_name = (char*)"../resources/nestest.nes";
 	cartridge* c = new cartridge(file_name);
 	ram* r = new ram(2 * 1024);
 	cpu_bus* b = new cpu_bus(c, r);
-	r6502* cpu = new r6502(b);
+	_cpu = new r6502(b);
 	
-	run_nestest(cpu);
+	_name = "nestest ROM";
 	
-	printf("Done!\n");
-	return 0;
+}
+
+nes_test::~nes_test()
+{	
 }
 
 
-void run_nestest(r6502* cpu){
+bool nes_test::run_test(){
 	
-	char* file_name = (char*)"/mnt/storage/Extra/CodeLiteWorkspaces/CodeLiteRootWorkspace/YANE/resources/nestest.log";
+	
+	char* file_name = (char*)"../resources/nestest.log";
 	
 	std::ifstream infile(file_name);
 	std::string line;
 	
 	while(std::getline(infile, line)){
 		
-		ui8_t op = (ui8_t)strtol(line.substr(6, 2).c_str(), NULL, 16); 
+		//ui8_t op = (ui8_t)strtol(line.substr(6, 2).c_str(), NULL, 16); 
 		ui16_t pc = (ui16_t)strtol(line.substr(0, 4).c_str(), NULL, 16); 
 		ui8_t a = (ui8_t)strtol(line.substr(48 + 2, 2).c_str(), NULL, 16);  
 		ui8_t x = (ui8_t)strtol(line.substr(48 + 7, 2).c_str(), NULL, 16);  
@@ -45,7 +36,12 @@ void run_nestest(r6502* cpu){
 		ui8_t sp = (ui8_t)strtol(line.substr(48 + 23, 2).c_str(), NULL, 16); 
 		ui32_t cyc = (ui32_t)strtol(line.substr(48 + 35 + 6, line.length()-35 - 48 - 6).c_str(), NULL, 16); 
 		
-		bool r = cpu->compare_state(pc, a, x, y, s, sp, 0);
+		bool r = _cpu->compare_state(pc, a, x, y, s, sp, cyc);
+		if(!r) {
+			return false;
+		}
+		
+		/*
 		cpu->debug();
 		if(!r){
 			
@@ -82,11 +78,13 @@ void run_nestest(r6502* cpu){
 			<< std::endl; 
 			break;
 		}
+		*/
 		
-		cpu->clock();
-		
+		_cpu->clock();
 		
 		//std::this_thread::sleep_for (std::chrono::milliseconds(100));
 	}
 	
+	
+	return true;
 }

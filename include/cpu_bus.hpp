@@ -1,8 +1,9 @@
 #pragma once
-#include "yane.h"
 
-#include "cartridge.h"
-#include "ram.h"
+#include "yane.hpp"
+
+#include "cartridge.hpp"
+#include "ram.hpp"
 
 class cpu_bus
 {

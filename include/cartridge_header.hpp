@@ -1,5 +1,5 @@
 #pragma once
-#include "yane.h"
+#include "yane.hpp"
 
 using namespace std;
 

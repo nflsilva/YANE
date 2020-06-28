@@ -1,10 +1,6 @@
 #pragma once
 
-#include "include/cpu_bus.h"
-
-#include <unordered_map>
-#include <iomanip>
-
+#include "cpu_bus.hpp"
 
 
 
