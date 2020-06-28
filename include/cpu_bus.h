@@ -16,8 +16,8 @@ public:
 	cpu_bus(cartridge* c, ram* r);
 	~cpu_bus();
 
-	void write(ui16_t address, byte_t byte);
-	byte_t read(ui16_t address);
+	void write(ui16_t address, ui8_t byte);
+	ui8_t read(ui16_t address);
 
 };
 

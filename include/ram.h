@@ -5,15 +5,15 @@ class ram
 {
 private:
 
-	byte_t* data;
+	ui8_t* _data;
 	
 	
 public:
 	ram(ui16_t size);
 	~ram();
 	
-	byte_t read(ui16_t address);
-	void write(ui16_t address, byte_t data);
+	ui8_t read(ui16_t address);
+	void write(ui16_t address, ui8_t _data);
 	
 };
 

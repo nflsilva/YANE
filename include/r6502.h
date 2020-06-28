@@ -2,8 +2,21 @@
 
 #include "include/cpu_bus.h"
 
+#include <unordered_map>
+#include <iomanip>
+
+
+
+
+
 class r6502
 {
+	
+	struct r6502_instruction {
+		ui8_t (r6502::* operation)(void);
+		ui8_t (r6502::* addressing)(void);
+	};
+	
 private:
 
 	ui8_t _register_A;		//Accumulator
@@ -24,50 +37,60 @@ private:
 
 	cpu_bus* _bus;
 	
-	bool is_implicit;
+	bool _is_implied;
 	ui8_t _operand_value;
 	ui16_t _operand_address;
 	
 	
-	ui32_t _cycles;
+	ui8_t _operation_cycles;
+	ui32_t _total_cycles;
 	
 	
 public:
 	r6502(cpu_bus* bus);
 	~r6502();
 	
-
+	void debug();
+	bool compare_state(	ui16_t register_PC,
+						ui8_t register_A, 
+						ui8_t register_X, 
+						ui8_t register_Y, 
+						ui8_t state,
+						ui8_t register_S,
+						ui8_t cycles
+						);
 	
 	void clock();
 	void reset();
 	void nmi();
 	
 
-public:
+private:
 
 	ui8_t read(ui16_t address);
-	void write(ui16_t address, byte_t data);
+	void write(ui16_t address, ui8_t data);
 
 
 	//Addressing
 	//Non-Indexed, non-memory
-	ui8_t accumulator_addressing();
-	ui8_t implied_addressing();
-	ui8_t immediate_addressing();
+	ui8_t nop_addressing();
+	ui8_t implied_addressing();		//
+	ui8_t immediate_addressing();	//i
 	//Non-Indexed, memory
-	ui8_t relative_addressing();
-	ui8_t absolute_addressing();
-	ui8_t zeropage_addressing();
-	ui8_t indirect_addressing();
+	ui8_t relative_addressing();	//*+d
+	ui8_t absolute_addressing();	//a
+	ui8_t zeropage_addressing();	//d
+	ui8_t indirect_addressing();	//(a)
 	//Indexed
-	ui8_t absolute_x_indexed_addressing();
-	ui8_t absolute_y_indexed_addressing();
+	ui8_t absolute_x_indexed_addressing();	//a,x
+	ui8_t absolute_y_indexed_addressing();	//a,y
 	
-	ui8_t zeropage_x_indexed_addressing();
-	ui8_t zeropage_y_indexed_addressing();
+	ui8_t zeropage_x_indexed_addressing();	//d,x
+	ui8_t zeropage_y_indexed_addressing();	//d,y
 	
-	ui8_t indirect_indexed_addressing();
-	ui8_t indexed_indirect_addressing();
+	ui8_t x_indexed_indirect_addressing();	//(d,x)
+	ui8_t indirect_y_indexed_addressing();	//(d),y
+	
 
 	//Legal Opcodes
 	ui8_t adc_operation(); // A + M + C -> A
@@ -141,7 +164,7 @@ public:
 	ui8_t tya_operation(); // Y -> A
 	
 	//Illegal Opcodes
-	ui8_t kill_operation();
+	ui8_t stp_operation();
 	
 	ui8_t anc_operation();
 	ui8_t alr_operation();
@@ -171,16 +194,38 @@ public:
 	
 	
 	
-	// Helpers
-	void update_flag_N(byte_t data);
-	void update_flag_Z(byte_t data);
 	
-	void push(byte_t data);
-	byte_t pop();
+	// Helpers
+	void update_flag_N(ui8_t data);
+	void update_flag_Z(ui8_t data);
+	
+	void push(ui8_t data);
+	ui8_t pop();
 	
 	ui8_t cross_pages_cicles(ui16_t base_address, ui16_t indexed_address);
-	
 	ui8_t perform_branch();
+	
+	r6502_instruction instructions[16][16];
 
+	
+	/*
+	ui8_t (r6502::* cc_00_operations[8])(void);
+	ui8_t (r6502::* cc_01_operations[8])(void);
+	ui8_t (r6502::* cc_10_operations[8])(void);
+	ui8_t (r6502::* il_operations[8])(void);
+	std::unordered_map<ui8_t, ui8_t (r6502::*)(void)> ex_operations;
+	
+	ui8_t (r6502::* cc_00_addressings[8])(void);
+	ui8_t (r6502::* cc_01_addressings[8])(void);
+	ui8_t (r6502::* cc_10_addressings[8])(void);
+	ui8_t (r6502::* il_addressings[8])(void);
+	std::unordered_map<ui8_t, ui8_t (r6502::*)(void)> ex_addressings;
+	*/
+	
+	
+
+
+	
+	
 };
 

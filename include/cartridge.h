@@ -14,9 +14,9 @@ class cartridge{
 private: 
 
 	cartridge_header* _header;
-	byte_t* _unused_data;
-	byte_t* _prg_data;
-	byte_t* _chr_data;
+	ui8_t* _unused_data;
+	ui8_t* _prg_data;
+	ui8_t* _chr_data;
 	
 	i_mapper* _mapper;
 	
@@ -24,8 +24,8 @@ public:
 	cartridge(char* file_name);
 	~cartridge();
 	
-	byte_t read(ui16_t address);
-	void write(ui16_t address, byte_t byte);
+	ui8_t read(ui16_t address);
+	void write(ui16_t address, ui8_t byte);
 	
 
 };
