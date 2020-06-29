@@ -344,7 +344,8 @@ r6502::~r6502(){
 
 
 
-void r6502::clock(){
+bool r6502::clock(){
+	bool r = false;
 	
 	if(_operation_cycles == 0) {
 		_operation_opcode = read(_register_PC++);
@@ -369,12 +370,11 @@ void r6502::clock(){
 		
 		
 		_total_cycles += max(2, (_operation_cycles - 1));
-		
+		r = true;
 	}
-	_operation_cycles = 0;
+	_operation_cycles--;
 	
-	
-
+	return r;
 }
 
 ui8_t r6502::read(ui16_t address) {
@@ -987,6 +987,7 @@ ui8_t r6502::perform_branch(){
 	_register_PC = _operand_address;
 	return cycles + 1;
 }
+
 
 //Debug
 bool r6502::compare_state(ui16_t register_PC, ui8_t register_A, ui8_t register_X, ui8_t register_Y, ui8_t state, ui8_t register_S, ui32_t cycles){

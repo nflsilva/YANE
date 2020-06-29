@@ -1,13 +1,10 @@
 #include "yane.hpp"
 
-#include "cartridge.hpp"
-#include "ram.hpp"
-#include "cpu_bus.hpp"
-#include "r6502.hpp"
+#include "nes_console.hpp"
 
 
-
-void run_nestest(r6502* cpu);
+void run_nestest_cpu(nes_console* console);
+void run_nestest_ppu(nes_console* console);
 
 
 
@@ -15,19 +12,31 @@ int main(int argc, char **argv){
 	
 	
 	char* file_name = (char*)"resources/nestest.nes";
-	cartridge* c = new cartridge(file_name);
-	ram* r = new ram(2 * 1024);
-	cpu_bus* b = new cpu_bus(c, r);
-	r6502* cpu = new r6502(b);
+	cartridge* cart = new cartridge(file_name);
 	
-	run_nestest(cpu);
+	nes_console* console = new nes_console(cart);
+	
+	
+	
+	run_nestest_ppu(console);
 	
 	printf("Done!\n");
 	return 0;
 }
 
+void run_nestest_ppu(nes_console* console){
+	
+	while(1) {
+		
+		console->clock();
+		
+	}
+	
+	
+}
 
-void run_nestest(r6502* cpu){
+/*
+void run_nestest_cpu(nes_console* console){
 	
 	
 	
@@ -86,11 +95,14 @@ void run_nestest(r6502* cpu){
 			<< std::endl; 
 			break;
 		}
-		
-		cpu->clock();
+
+		while(!cpu->clock()){
+			
+			
+		};
 		
 	}
+
 	
-	
-}
+}*/
 

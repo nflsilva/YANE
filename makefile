@@ -21,7 +21,7 @@ CFLAGS=-g -Wall -ansi -std=gnu++11 -I$(IDIR)
 _APP_DEPS = *.hpp 
 APP_DEPS = $(patsubst %,$(IDIR)/%,$(_APP_DEPS))
 
-_APP_OBJ = r6502.o cartridge_header.o cartridge.o cpu_bus.o mapper000.o ram.o
+_APP_OBJ = r6502.o cartridge_header.o cartridge.o cpu_bus.o mapper000.o ram.o u2c02.o ppu_bus.o nes_console.o
 APP_OBJ = $(patsubst %,$(ODIR)/%,$(_APP_OBJ))
 
 _TST_OBJ = nes_test.o main.o

@@ -56,7 +56,7 @@ public:
 						ui32_t cycles
 						);
 	
-	void clock();
+	bool clock();
 	void reset();
 	void nmi();
 	

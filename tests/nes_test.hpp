@@ -1,17 +1,14 @@
 #pragma once
 #include "i_test.hpp"
 
+#include "nes_console.hpp"
 
-#include "r6502.hpp"
-#include "cpu_bus.hpp"
-#include "ram.hpp"
-#include "cartridge.hpp"
 
 class nes_test : public i_test
 {
 private:
 	
-	r6502* _cpu;
+	nes_console* _console;
 	
 	
 public:

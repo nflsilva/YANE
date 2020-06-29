@@ -4,9 +4,8 @@ nes_test::nes_test()
 {	
 	char* file_name = (char*)"resources/nestest.nes";
 	cartridge* c = new cartridge(file_name);
-	ram* r = new ram(2 * 1024);
-	cpu_bus* b = new cpu_bus(c, r);
-	_cpu = new r6502(b);
+
+	_console = new nes_console(c);
 	
 	_name = "nestest ROM";
 	
@@ -36,11 +35,13 @@ bool nes_test::run_test(){
 		ui8_t sp = (ui8_t)strtol(line.substr(71, 2).c_str(), NULL, 16); 
 		ui32_t cyc = (ui32_t)strtol(line.substr(90, line.length()-90).c_str(), NULL, 10);
 		
-		bool r = _cpu->compare_state(pc, a, x, y, s, sp, cyc);
+		bool r = _console->get_cpu()->compare_state(pc, a, x, y, s, sp, cyc);
 		if(!r) {
 			return false;
 		}
-		_cpu->clock();
+		
+		while(!_console->get_cpu()->clock()){};
+
 		
 	}
 	
