@@ -325,61 +325,9 @@ _total_cycles(7)
 		}
 	}
 	
-	/*
-	cross_pages_instructions.insert(0x10);
-	cross_pages_instructions.insert(0x30);
-	cross_pages_instructions.insert(0x50);
-	cross_pages_instructions.insert(0x70);
-	cross_pages_instructions.insert(0x90);
-	cross_pages_instructions.insert(0xB0);
-	cross_pages_instructions.insert(0xD0);
-	cross_pages_instructions.insert(0xF0);
-	
-	cross_pages_instructions.insert(0x11);
-	cross_pages_instructions.insert(0x31);
-	cross_pages_instructions.insert(0x51);
-	cross_pages_instructions.insert(0x71);
-	cross_pages_instructions.insert(0xB1);
-	cross_pages_instructions.insert(0xD1);
-	cross_pages_instructions.insert(0xF1);
-	
-	cross_pages_instructions.insert(0x19);
-	cross_pages_instructions.insert(0x39);
-	cross_pages_instructions.insert(0x59);
-	cross_pages_instructions.insert(0x79);
-	cross_pages_instructions.insert(0xB3);
-	cross_pages_instructions.insert(0xD9);
-	cross_pages_instructions.insert(0xF9);
-	
-	cross_pages_instructions.insert(0x1C);
-	cross_pages_instructions.insert(0x3C);
-	cross_pages_instructions.insert(0x5C);
-	cross_pages_instructions.insert(0x7C);
-	cross_pages_instructions.insert(0xB9);
-	cross_pages_instructions.insert(0xDC);
-	cross_pages_instructions.insert(0xFC);
-	
-	cross_pages_instructions.insert(0x1D);
-	cross_pages_instructions.insert(0x3D);
-	cross_pages_instructions.insert(0x3D);
-	cross_pages_instructions.insert(0x5D);
-	cross_pages_instructions.insert(0x7D);
-	cross_pages_instructions.insert(0xBB);
-	cross_pages_instructions.insert(0xDD);
-	cross_pages_instructions.insert(0xFD);
-	
-	cross_pages_instructions.insert(0xBC);
-	cross_pages_instructions.insert(0xBD);
-	cross_pages_instructions.insert(0xBE);
-	cross_pages_instructions.insert(0xBF);
-	*/
-	
 	cross_pages_instructions.insert(0x1E);
-	
 	cross_pages_instructions.insert(0x3E);
-	
 	cross_pages_instructions.insert(0x5E);
-	
 	cross_pages_instructions.insert(0x7E);
 	cross_pages_instructions.insert(0xDE);
 	cross_pages_instructions.insert(0xFE);
@@ -388,7 +336,6 @@ _total_cycles(7)
 	cross_pages_instructions.insert(0x91);
 	cross_pages_instructions.insert(0x99);
 	cross_pages_instructions.insert(0x9D);
-	
 	
 }
 
@@ -491,13 +438,13 @@ ui8_t r6502::absolute_x_indexed_addressing(){
 	ui8_t cycles = absolute_addressing();
 	ui16_t base_address = _operand_address;
 	_operand_address += _register_X;
-	return cycles + cross_pages_cicles(base_address, _operand_address);
+	return cycles + cross_pages_cycles(base_address, _operand_address);
 }
 ui8_t r6502::absolute_y_indexed_addressing(){
 	ui8_t cycles = absolute_addressing();
 	ui16_t base_address = _operand_address;
 	_operand_address += _register_Y;
-	return cycles + cross_pages_cicles(base_address, _operand_address);
+	return cycles + cross_pages_cycles(base_address, _operand_address);
 }
 ui8_t r6502::zeropage_x_indexed_addressing(){
 	_operand_address = (read(_register_PC++) + _register_X) & 0xFF;
@@ -524,7 +471,7 @@ ui8_t r6502::indirect_y_indexed_addressing(){
 	ui16_t base_address = lower_byte | (higher_byte << 8);
 	_operand_address = base_address + _register_Y;
 	
-	return cross_pages_cicles(base_address, _operand_address);
+	return cross_pages_cycles(base_address, _operand_address);
 }
 
 
@@ -1010,29 +957,22 @@ ui8_t r6502::stp_operation(){
 }
 
 
-
+//Helper methods
 void r6502::update_flag_N(ui8_t data){
 	_flag_N = data & 0x80;
 }
 void r6502::update_flag_Z(ui8_t data){
 	_flag_Z = data == 0x00;
 }
-
-
-ui8_t r6502::cross_pages_cicles(ui16_t base_address, ui16_t indexed_address){
+ui8_t r6502::cross_pages_cycles(ui16_t base_address, ui16_t indexed_address){
 	
-	if( 
-		(base_address & 0xFF00) != (indexed_address & 0xFF00) 
-		|| 
-		cross_pages_instructions.find(_operation_opcode) != cross_pages_instructions.end())
-	{
+	if((base_address & 0xFF00) != (indexed_address & 0xFF00) || 
+		cross_pages_instructions.find(_operation_opcode) != cross_pages_instructions.end()) {
 		return 1;
 	}
 	
 	return 0;
 }
-
-
 void r6502::push(ui8_t data){
 	write(0x0100 + _register_S, data);
 	_register_S--;
@@ -1042,14 +982,13 @@ ui8_t r6502::pop() {
 	_operation_cycles++;
 	return read(0x0100 + _register_S);
 }
-
 ui8_t r6502::perform_branch(){
-	ui8_t cycles = cross_pages_cicles(_register_PC, _operand_address);
+	ui8_t cycles = cross_pages_cycles(_register_PC, _operand_address);
 	_register_PC = _operand_address;
 	return cycles + 1;
 }
 
-
+//Debug
 bool r6502::compare_state(ui16_t register_PC, ui8_t register_A, ui8_t register_X, ui8_t register_Y, ui8_t state, ui8_t register_S, ui32_t cycles){
 	ui8_t _state = 
 	(_flag_N ? 0x80: 0x00) | 

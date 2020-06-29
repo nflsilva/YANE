@@ -199,7 +199,7 @@ private:
 	void push(ui8_t data);
 	ui8_t pop();
 	
-	ui8_t cross_pages_cicles(ui16_t base_address, ui16_t indexed_address);
+	ui8_t cross_pages_cycles(ui16_t base_address, ui16_t indexed_address);
 	ui8_t perform_branch();
 	
 	r6502_instruction instructions[16][16];

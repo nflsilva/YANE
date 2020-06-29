@@ -27,14 +27,14 @@ bool nes_test::run_test(){
 	
 	while(std::getline(infile, line)){
 		
-		ui8_t op = (ui8_t)strtol(line.substr(6, 2).c_str(), NULL, 16); 
+		//ui8_t op = (ui8_t)strtol(line.substr(6, 2).c_str(), NULL, 16); 
 		ui16_t pc = (ui16_t)strtol(line.substr(0, 4).c_str(), NULL, 16); 
-		ui8_t a = (ui8_t)strtol(line.substr(48 + 2, 2).c_str(), NULL, 16);  
-		ui8_t x = (ui8_t)strtol(line.substr(48 + 7, 2).c_str(), NULL, 16);  
-		ui8_t y = (ui8_t)strtol(line.substr(48 + 12, 2).c_str(), NULL, 16); 
-		ui16_t s = (ui16_t)strtol(line.substr(48 + 17, 2).c_str(), NULL, 16); 
-		ui8_t sp = (ui8_t)strtol(line.substr(48 + 23, 2).c_str(), NULL, 16); 
-		ui32_t cyc = (ui32_t)strtol(line.substr(48 + 35 + 6, line.length()-35 - 48 - 6).c_str(), NULL, 16); 
+		ui8_t a = (ui8_t)strtol(line.substr(50, 2).c_str(), NULL, 16);  
+		ui8_t x = (ui8_t)strtol(line.substr(55, 2).c_str(), NULL, 16);  
+		ui8_t y = (ui8_t)strtol(line.substr(60, 2).c_str(), NULL, 16); 
+		ui16_t s = (ui16_t)strtol(line.substr(65, 2).c_str(), NULL, 16); 
+		ui8_t sp = (ui8_t)strtol(line.substr(71, 2).c_str(), NULL, 16); 
+		ui32_t cyc = (ui32_t)strtol(line.substr(90, line.length()-90).c_str(), NULL, 10);
 		
 		bool r = _cpu->compare_state(pc, a, x, y, s, sp, cyc);
 		if(!r) {

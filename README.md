@@ -13,7 +13,7 @@ The project is still in development using the CodeLite IDE.
 - [Datasheet 1](https://www.mdawson.net/vic20chrome/cpu/mos_6500_mpu_preliminary_may_1976.pdf)
 - [Datasheet 2](http://archive.6502.org/datasheets/rockwell_r650x_r651x.pdf)
 - [Operations Codes](http://6502.org/tutorials/6502opcodes.html)
-- [Interpretation of OPCodes](http://nparker.llx.com/a2/opcodes.html)
+- [OPCodes and Timing](http://nparker.llx.com/a2/opcodes.html)
 - [Addressing Modes](http://www.emulator101.com/6502-addressing-modes.html)
 - [Undocumented Operations](http://www.oxyron.de/html/opcodes02.html)
 
