@@ -4,7 +4,7 @@
 
 class i_test
 {
-private:
+public:
 	std::string _name;
 	
 public:

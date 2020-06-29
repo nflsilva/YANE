@@ -37,7 +37,7 @@ private:
 	ui8_t _operand_value;
 	ui16_t _operand_address;
 	
-	
+	ui8_t _operation_opcode;
 	ui8_t _operation_cycles;
 	ui32_t _total_cycles;
 	
@@ -53,7 +53,7 @@ public:
 						ui8_t register_Y, 
 						ui8_t state,
 						ui8_t register_S,
-						ui8_t cycles
+						ui32_t cycles
 						);
 	
 	void clock();
@@ -204,7 +204,7 @@ private:
 	
 	r6502_instruction instructions[16][16];
 	
-
+	unordered_set<ui8_t> cross_pages_instructions;
 
 	
 	

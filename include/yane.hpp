@@ -8,6 +8,7 @@
 
 #include <sstream>
 
+#include <unordered_set>
 
 typedef int8_t i8_t;
 typedef uint8_t ui8_t;
