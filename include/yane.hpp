@@ -5,10 +5,14 @@
 #include <string.h>
 #include <thread>
 #include <chrono>
+#include <vector>
+#include <algorithm>
 
 #include <sstream>
-
 #include <unordered_set>
+
+#include <GL/glew.h>
+#include <GL/glut.h>
 
 typedef int8_t i8_t;
 typedef uint8_t ui8_t;

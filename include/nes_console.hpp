@@ -11,7 +11,7 @@
 
 class nes_console
 {
-private:
+public:
 
 	cartridge* _cartridge;
 
@@ -28,10 +28,12 @@ public:
 	nes_console(cartridge* c);
 	~nes_console();
 	
-	r6502* get_cpu();
 	
 	bool clock();
 	void reset();
+
+	//debug
+	r6502* get_cpu();
 
 };
 

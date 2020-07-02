@@ -8,16 +8,17 @@ class u2c02
 private:
 
 
-	ui8_t ppuctrl;
-	ui8_t ppumask;
-	ui8_t ppustatus;
-	ui8_t oamaddr;
-	ui8_t oamdata;
-	ui8_t ppuscroll;
-	ui8_t ppuaddr;
-	ui8_t ppudata;
-	ui8_t oamdma;
+	ui8_t _ppuctrl;
+	ui8_t _ppumask;
+	ui8_t _ppustatus;
+	ui8_t _oamaddr;
+	ui8_t _oamdata;
+	ui8_t _ppuscroll;
+	ui16_t _ppuaddr;
+	ui8_t _ppudata;
+	ui8_t _oamdma;
 
+	bool _address_latch;
 
 	ppu_bus* _bus;
 
@@ -31,6 +32,7 @@ public:
 
 	ui8_t read(ui16_t address);
 	void write(ui16_t address, ui8_t _data);
+	
 
 };
 

@@ -17,6 +17,8 @@ The project is still in development using the CodeLite IDE.
 - [Addressing Modes](http://www.emulator101.com/6502-addressing-modes.html)
 - [Undocumented Operations](http://www.oxyron.de/html/opcodes02.html)
 
+** 2C02 PPU
+- [Registers](http://wiki.nesdev.com/w/index.php/PPU_registers)
 
 
 ** General

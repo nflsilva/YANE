@@ -5,7 +5,7 @@ r6502::r6502(cpu_bus* bus) :
 _register_A(0), 
 _register_Y(0), 
 _register_X(0), 
-_register_PC(0xC000), 
+_register_PC(0xC004), 
 _register_S(0xFD), 
 
 _flag_N(false),
@@ -345,6 +345,7 @@ r6502::~r6502(){
 
 
 bool r6502::clock(){
+
 	bool r = false;
 	
 	if(_operation_cycles == 0) {
@@ -376,6 +377,49 @@ bool r6502::clock(){
 	
 	return r;
 }
+
+void r6502::reset(){
+	change_execution_context(0xFFFC, false, false);
+	_operation_cycles = 0;
+	_total_cycles = 0;
+	
+}
+void r6502::nmi(){
+	change_execution_context(0xFFFA, true, false);
+	_operation_cycles += 3;
+}
+void r6502::irq(){
+	change_execution_context(0xFFFE, true, false);
+}
+void  r6502::change_execution_context(ui16_t vector, bool push_pc, bool set_b){
+
+	if(push_pc){
+		
+		push(_register_PC >> 8);
+		push(_register_PC);
+
+		int state = 
+		(_flag_N ? 0x80: 0x00) | 
+		(_flag_V ? 0x40: 0x00) | 
+		(_flag_U ? 0x20: 0x00) |
+		(set_b  ? true : _flag_B ? 0x10: 0x00) |
+		(_flag_D ? 0x08: 0x00) |
+		(_flag_I ? 0x04: 0x00) |
+		(_flag_Z ? 0x02: 0x00) |
+		(_flag_C ? 0x01: 0x00);
+		push(state);
+	}
+
+	_flag_I = false;
+	
+	ui8_t low_pc = read(vector) & 0x00FF;
+	ui8_t high_pc = read(vector + 1) & 0x00FF;
+	_register_PC = (high_pc << 8) | low_pc;
+	
+}
+
+
+
 
 ui8_t r6502::read(ui16_t address) {
 	_operation_cycles++;

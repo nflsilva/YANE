@@ -33,6 +33,10 @@ private:
 
 	cpu_bus* _bus;
 	
+	r6502_instruction instructions[16][16];
+	unordered_set<ui8_t> cross_pages_instructions;
+	
+	
 	bool _is_implied;
 	ui8_t _operand_value;
 	ui16_t _operand_address;
@@ -57,8 +61,10 @@ public:
 						);
 	
 	bool clock();
-	void reset();
+
 	void nmi();
+	void reset();
+	void irq();
 	
 
 private:
@@ -196,16 +202,14 @@ private:
 	void update_flag_N(ui8_t data);
 	void update_flag_Z(ui8_t data);
 	
+	
 	void push(ui8_t data);
 	ui8_t pop();
 	
+	
+	void  change_execution_context(ui16_t vector, bool push_pc, bool set_b);
 	ui8_t cross_pages_cycles(ui16_t base_address, ui16_t indexed_address);
 	ui8_t perform_branch();
-	
-	r6502_instruction instructions[16][16];
-	
-	unordered_set<ui8_t> cross_pages_instructions;
-
 	
 	
 };
