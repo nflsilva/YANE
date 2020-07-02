@@ -66,12 +66,7 @@ int main(int argc, char **argv){
 	while(1){
 		
 		display->notify_pixels(actual_frame);
-		/*
-		colors[0] = display->_pal_screen_colors[console->_ppu_bus->read(0x3F00) * 3 + 0] / 255.0;
-		colors[1] = display->_pal_screen_colors[console->_ppu_bus->read(0x3F00) * 3 + 1] / 255.0;
-		colors[2] = display->_pal_screen_colors[console->_ppu_bus->read(0x3F00) * 3 + 2] / 255.0;
-		draw_square(actual_frame, 10.0, 80.0, colors);
-		*/
+		
 		int y = 40;
 		for(int p = 0; p < 8; p++){
 			

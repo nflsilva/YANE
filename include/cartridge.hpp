@@ -27,6 +27,7 @@ public:
 	ui8_t read(ui16_t address);
 	void write(ui16_t address, ui8_t byte);
 	
+	cartridge_header* get_header();
 
 };
 

@@ -21,7 +21,9 @@ public:
 	
 	u2c02* _ppu;
 	ppu_bus* _ppu_bus;
-	ram* _vram;
+	ram* _vram_pt;
+	ram* _vram_nt_0;
+	ram* _vram_nt_1;
 	
 	
 public:

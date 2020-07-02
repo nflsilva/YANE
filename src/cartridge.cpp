@@ -41,3 +41,8 @@ void cartridge::write(ui16_t address, ui8_t byte){
 	// should we write on the rom?
 	// empty for now
 }
+
+
+cartridge_header* cartridge::get_header() {
+	return _header;
+}

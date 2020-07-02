@@ -1,11 +1,9 @@
 #include "u2c02.hpp"
 
-u2c02::u2c02(ppu_bus* b) : _ppustatus(0xE0), _address_latch(false), _bus(b) 
-{
+u2c02::u2c02(ppu_bus* b) : _ppustatus(0xE0), _address_latch(false), _bus(b) {
 }
 
-u2c02::~u2c02()
-{
+u2c02::~u2c02(){
 }
 
 

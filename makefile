@@ -12,7 +12,7 @@ ANAME=yane
 TNAME=tests
 
 CC=g++
-CFLAGS=-g -Wall -ansi -std=gnu++11 -I$(IDIR)
+CFLAGS=-g -Wall -ansi -std=gnu++11 -I$(IDIR) -O3
 
 
 
