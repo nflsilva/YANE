@@ -22,6 +22,7 @@ void ppu_bus::write(ui16_t address, ui8_t byte){
 		_cartridge->write(address, byte);
 	}
 	else if(address >= 0x2000 && address <= 0x2FFF) {
+		
 		//Name Table
 		ram* target_name_table;
 		if(_cartridge->get_header()->get_mapper1() & 0x01){
@@ -55,7 +56,7 @@ ui8_t ppu_bus::read(ui16_t address){
 	
 	if(address >= 0x0000 && address <= 0x1FFF){
 		//Pattern Memory
-		return _cartridge->read(address);
+		return _cartridge->read(address & 0x0FFF);
 	}
 	else if(address >= 0x2000 && address <= 0x2FFF) {
 		//Name Table

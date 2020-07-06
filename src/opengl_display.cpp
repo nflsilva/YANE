@@ -18,7 +18,7 @@ openGL_display::~openGL_display(){
 void openGL_display::init(){
 	
 	glutInit(&_argc, _argv);
-	glutCreateWindow("GLEW Test");
+	glutCreateWindow("YANE");
 	GLenum err = glewInit();
 	if (GLEW_OK != err){
 		fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
@@ -27,10 +27,10 @@ void openGL_display::init(){
 	
 		
 	_screen_points = new GLfloat[16] {
-		-1.0f, -1.0f, 	0.0f, 0.0f,
-		 1.0f, -1.0f,	1.0f, 0.0f,	
-		-1.0f,  1.0f,	0.0f, 1.0f,
-		 1.0f,  1.0f,	1.0f, 1.0f
+		-1.0f, -1.0f, 	0.0f, 1.0f,
+		 1.0f, -1.0f,	1.0f, 1.0f,	
+		-1.0f,  1.0f,	0.0f, 0.0f,
+		 1.0f,  1.0f,	1.0f, 0.0f
 	};
 
 	_white_noise_frame = new GLfloat[GL_DISPLAY_WIDTH * GL_DISPLAY_HEIGHT * 4];
@@ -152,6 +152,7 @@ void openGL_display::draw_buffer(){
 
 
 void openGL_display::notify_pixels(GLfloat* frame){
+	
 	if(frame == NULL){
 		generate_white_noise(_white_noise_frame);
 		_screen_frame = _white_noise_frame;
@@ -161,6 +162,22 @@ void openGL_display::notify_pixels(GLfloat* frame){
 	}
 	draw_buffer();
 }
+void openGL_display::notify_pixels(int x, int y, ui8_t color_index){
+	
+	GLfloat pal_color_r = _pal_screen_colors[color_index * 3 + 0];
+	GLfloat pal_color_g = _pal_screen_colors[color_index * 3 + 1];
+	GLfloat pal_color_b = _pal_screen_colors[color_index * 3 + 2];
+	
+	_white_noise_frame[x * 4 + y * GL_DISPLAY_WIDTH * 4 + 0] = pal_color_r / 255;
+	_white_noise_frame[x * 4 + y * GL_DISPLAY_WIDTH * 4 + 1] = pal_color_g / 255;
+	_white_noise_frame[x * 4 + y * GL_DISPLAY_WIDTH * 4 + 2] = pal_color_b / 255;
+	_white_noise_frame[x * 4 + y * GL_DISPLAY_WIDTH * 4 + 3] = 1.0;
+	
+	_screen_frame = _white_noise_frame;
+	//draw_buffer();
+}
+
+
 
 
 

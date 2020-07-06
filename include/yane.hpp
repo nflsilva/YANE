@@ -10,6 +10,7 @@
 
 #include <sstream>
 #include <unordered_set>
+#include <thread>
 
 #include <GL/glew.h>
 #include <GL/glut.h>

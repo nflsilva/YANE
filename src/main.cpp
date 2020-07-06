@@ -7,16 +7,18 @@ void run_nestest_cpu(nes_console* console);
 void run_nestest_ppu();
 
 
+
+
 void draw_square(float* frame, int x, int y, float* color){
 	
 	int base_x = x * 4;
 	int base_y = y * GL_DISPLAY_WIDTH * 4;
 	
-	for(int fr = 0; fr < 10; fr++){
-		for(int fc = 0; fc < 10; fc++){
+	for(int fr = 0; fr < 8; fr++){
+		int offset_y = fr * GL_DISPLAY_WIDTH * 4;
+		for(int fc = 0; fc < 8; fc++){
 			
-			int offset_x = fr * 4;
-			int offset_y = fc * GL_DISPLAY_WIDTH * 4;
+			int offset_x = fc * 4;
 			
 			frame[base_x + offset_x + base_y + offset_y + 0] = color[0];
 			frame[base_x + offset_x + base_y + offset_y + 1] = color[1];
@@ -27,19 +29,54 @@ void draw_square(float* frame, int x, int y, float* color){
 }
 
 void draw_palette(int palette_number, int y, float* frame, float* colors){
-	
 	for(int p = 0; p < 4; p++){
 		draw_square(frame, (p + 1) * 10.0 + palette_number * 50.0, y,  	&colors[p * 3]);
 	}
 }
 
+void draw_square_in_screen_tile(float* frame, int tile_x, int tile_y, float* color){
+	draw_square(frame, tile_x * 8, tile_y * 8, color);
+}
+
+void tick(nes_console* console){
+	while(1){
+		console->clock();
+		std::this_thread::sleep_for(std::chrono::nanoseconds(600 / 16));
+	};
+}
+
 
 int main(int argc, char **argv){
+	
+	
+	char* file_name = (char*)"resources/nestest.nes";
+	cartridge* cart = new cartridge(file_name);
+	nes_console* console = new nes_console(cart);
+	
+	
 	
 	openGL_display* display = new openGL_display(argc, argv);
 	display->init();
 	
 	
+	while(1){
+		console->clock();
+		ui16_t x = console->_ppu->_current_cycle;
+		ui16_t y = console->_ppu->_current_scanline;
+		ui8_t c = console->_ppu->_color_index;
+		display->notify_pixels(x, y, c);
+		if(console->_ppu->_completed_frame){
+			console->_ppu->_completed_frame = false;
+			display->draw_buffer();
+		}
+		
+		ui8_t tile_value = console->_ppu_bus->read(0x2000);
+		
+		//std::this_thread::sleep_for(std::chrono::nanoseconds(600 / 16));
+	};
+	
+	
+	/*
 	float* actual_frame = new float[GL_DISPLAY_WIDTH * GL_DISPLAY_HEIGHT * 4];
 	//background
 	for (int i = 0; i < GL_DISPLAY_HEIGHT; i++) {
@@ -58,15 +95,39 @@ int main(int argc, char **argv){
 		1.0, 1.0, 1.0
 	};
 	
-	char* file_name = (char*)"resources/nestest.nes";
-	cartridge* cart = new cartridge(file_name);
-	nes_console* console = new nes_console(cart);
+
 	
+	std::thread tick_console(tick, console);
+
 	
 	while(1){
-		
+
 		display->notify_pixels(actual_frame);
+
 		
+		for(int tile_y = 0; tile_y < 30; tile_y++){
+			for(int tile_x = 0; tile_x < 32; tile_x++){
+				ui8_t tile_value = console->_ppu_bus->read(0x2000 + tile_x + (tile_y * 32));
+				
+				//cout << hex << (int)tile_value;
+				
+				switch(tile_value){
+					case 0x20:
+						colors[0] = 0;
+						colors[1] = 0;
+						colors[2] = 0;
+						break;
+					default:
+						colors[0] = 1;
+						colors[1] = 1;
+						colors[2] = 1;
+						break;
+				}
+				draw_square_in_screen_tile(actual_frame, tile_x, tile_y, colors);
+			}
+		}
+
+		// draw paletts
 		int y = 40;
 		for(int p = 0; p < 8; p++){
 			
@@ -80,29 +141,41 @@ int main(int argc, char **argv){
 			}
 			
 			draw_palette(p % 4, y, actual_frame, colors);
-			
-			
 		};
 		
+				
+		draw_square_in_screen_tile(actual_frame, 0, 0, colors);
+		draw_square_in_screen_tile(actual_frame, 2, 0, &colors[3]);
+		draw_square_in_screen_tile(actual_frame, 4, 0, &colors[6]);
+		
+		draw_square_in_screen_tile(actual_frame, 6, 0, colors);
+		draw_square_in_screen_tile(actual_frame, 8, 0, &colors[3]);
+		draw_square_in_screen_tile(actual_frame, 10, 0, &colors[6]);
+		
+		draw_square_in_screen_tile(actual_frame, 12, 0, colors);
+		draw_square_in_screen_tile(actual_frame, 14, 0, &colors[3]);
+		draw_square_in_screen_tile(actual_frame, 16, 0, &colors[6]);
+		
+		draw_square_in_screen_tile(actual_frame, 18, 0, colors);
+		draw_square_in_screen_tile(actual_frame, 20, 0, &colors[3]);
+		draw_square_in_screen_tile(actual_frame, 22, 0, &colors[6]);
+		
+		draw_square_in_screen_tile(actual_frame, 24, 0, colors);
+		draw_square_in_screen_tile(actual_frame, 26, 0, &colors[3]);
+		draw_square_in_screen_tile(actual_frame, 28, 0, &colors[6]);
+		
+		draw_square_in_screen_tile(actual_frame, 30, 0, colors);
+		//draw_square_in_screen_tile(actual_frame, 32, 32, &colors[3]);	
 		//console->get_cpu()->debug();
-		while(!console->clock()){
-			
-			
-		};
+
 		
-	};
+	};*/
+	
+	//tick(console);
 	
 	printf("Done!\n");
 	return 0;
 }
-
-
-
-
-
-
-
-
 
 
 /*

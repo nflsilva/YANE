@@ -25,6 +25,8 @@ public:
 	ram* _vram_nt_0;
 	ram* _vram_nt_1;
 	
+	ui32_t _clock_cycles;
+	
 	
 public:
 	nes_console(cartridge* c);

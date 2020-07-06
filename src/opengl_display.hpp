@@ -28,9 +28,10 @@ public:
 	
 	void init();
 	void notify_pixels(GLfloat* frame);
+	void notify_pixels(int x, int y, ui8_t color_index);
 
 
-private:
+public:
 
 	void draw_buffer();
 
