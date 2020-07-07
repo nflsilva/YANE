@@ -32,7 +32,7 @@ bool nes_console::clock(){
 	}
 	
 	if(_ppu->should_nmi()){
-		//_cpu->nmi();
+		_cpu->nmi();
 	}
 	
 	_clock_cycles++;

@@ -2,9 +2,8 @@
 
 
 static GLuint create_shader_program();
-static void generate_white_noise(float* frame);
 
-openGL_display::openGL_display(int argc, char** argv){
+openGL_display::openGL_display(){
 
 }
 
@@ -17,25 +16,24 @@ openGL_display::~openGL_display(){
 
 void openGL_display::init(){
 	
-	glutInit(&_argc, _argv);
+	int argc = 1;
+	char * argv[1] = {"a"};
+	glutInit(&argc, argv);
 	glutCreateWindow("YANE");
+	
 	GLenum err = glewInit();
 	if (GLEW_OK != err){
 		fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
 	}
 	fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
-	
-		
+
 	_screen_points = new GLfloat[16] {
 		-1.0f, -1.0f, 	0.0f, 1.0f,
 		 1.0f, -1.0f,	1.0f, 1.0f,	
 		-1.0f,  1.0f,	0.0f, 0.0f,
 		 1.0f,  1.0f,	1.0f, 0.0f
 	};
-
-	_white_noise_frame = new GLfloat[GL_DISPLAY_WIDTH * GL_DISPLAY_HEIGHT * 4];
-	
-	
+	_screen_frame = new GLfloat[GL_DISPLAY_WIDTH * GL_DISPLAY_HEIGHT * 4];
 	_pal_screen_colors = new GLfloat[192] {
 		84, 84, 84, 
 		0, 30, 116,
@@ -106,10 +104,8 @@ void openGL_display::init(){
 		0, 0, 0,
 	};
 	
-	
 	GLuint shader_program = create_shader_program();
 	glUseProgram(shader_program);
-	
 	
 }
 
@@ -150,50 +146,21 @@ void openGL_display::draw_buffer(){
 	
 }
 
-
-void openGL_display::notify_pixels(GLfloat* frame){
-	
-	if(frame == NULL){
-		generate_white_noise(_white_noise_frame);
-		_screen_frame = _white_noise_frame;
-	}
-	else {
-		_screen_frame = frame;
-	}
-	draw_buffer();
-}
-void openGL_display::notify_pixels(int x, int y, ui8_t color_index){
+void openGL_display::notify_pixel(int x, int y, ui8_t color_index){
 	
 	GLfloat pal_color_r = _pal_screen_colors[color_index * 3 + 0];
 	GLfloat pal_color_g = _pal_screen_colors[color_index * 3 + 1];
 	GLfloat pal_color_b = _pal_screen_colors[color_index * 3 + 2];
 	
-	_white_noise_frame[x * 4 + y * GL_DISPLAY_WIDTH * 4 + 0] = pal_color_r / 255;
-	_white_noise_frame[x * 4 + y * GL_DISPLAY_WIDTH * 4 + 1] = pal_color_g / 255;
-	_white_noise_frame[x * 4 + y * GL_DISPLAY_WIDTH * 4 + 2] = pal_color_b / 255;
-	_white_noise_frame[x * 4 + y * GL_DISPLAY_WIDTH * 4 + 3] = 1.0;
+	_screen_frame[x * 4 + y * GL_DISPLAY_WIDTH * 4 + 0] = pal_color_r / 255;
+	_screen_frame[x * 4 + y * GL_DISPLAY_WIDTH * 4 + 1] = pal_color_g / 255;
+	_screen_frame[x * 4 + y * GL_DISPLAY_WIDTH * 4 + 2] = pal_color_b / 255;
+	_screen_frame[x * 4 + y * GL_DISPLAY_WIDTH * 4 + 3] = 1.0;
 	
-	_screen_frame = _white_noise_frame;
-	//draw_buffer();
 }
 
 
 
-
-
-static void generate_white_noise(float* frame){
-
-	for (int i = 0; i < GL_DISPLAY_HEIGHT; i++) {
-		for (int j = 0; j < GL_DISPLAY_WIDTH * 4; j+=4) {
-			int r = rand() % 2;
-			frame[i * GL_DISPLAY_WIDTH * 4 + j + 0] = r;
-			frame[i * GL_DISPLAY_WIDTH * 4 + j + 1] = r;
-			frame[i * GL_DISPLAY_WIDTH * 4 + j + 2] = r;
-			frame[i * GL_DISPLAY_WIDTH * 4 + j + 3] = 1.0;
-		}
-	}
-  
-}
 static std::string read_file(const char *filePath) {
 	
     std::string content;
@@ -257,8 +224,4 @@ static GLuint create_shader_program(){
 	glDeleteShader(fragment_shader);
 	
 	return program;
-}
-static void glut_timer(int value) {
-	glutPostRedisplay();
-	glutTimerFunc(1000, glut_timer, 0);
 }

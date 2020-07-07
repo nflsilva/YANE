@@ -32,16 +32,12 @@ public:
 	ui8_t _pattern_low_bit;
 	ui8_t _pattern_high_bit;
 	
-	
-	ui16_t _shifter_pattern_low;
-	ui16_t _shifter_pattern_high;
-	
-	ui16_t _shifter_attribute_low;
-	ui16_t _shifter_attribute_high;
+
 	
 	ui8_t _color_index;
 
 	bool _completed_frame;
+	bool _is_visible;
 
 	ppu_bus* _bus;
 

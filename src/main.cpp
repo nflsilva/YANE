@@ -55,24 +55,35 @@ int main(int argc, char **argv){
 	
 	
 	
-	openGL_display* display = new openGL_display(argc, argv);
+	openGL_display* display = new openGL_display();
 	display->init();
 	
 	
 	while(1){
 		console->clock();
-		ui16_t x = console->_ppu->_current_cycle;
-		ui16_t y = console->_ppu->_current_scanline;
-		ui8_t c = console->_ppu->_color_index;
-		display->notify_pixels(x, y, c);
-		if(console->_ppu->_completed_frame){
-			console->_ppu->_completed_frame = false;
-			display->draw_buffer();
+		//console->get_cpu()->debug()
+		
+		if(console->_ppu->_is_visible){
+			ui16_t x = console->_ppu->_current_cycle;
+			ui16_t y = console->_ppu->_current_scanline;
+			ui8_t c = console->_ppu->_color_index;
+			
+			/*
+			std::cout << (int)x;
+			std::cout << " ";
+			std::cout << (int)y;
+			std::cout << std::endl;
+			*/
+			
+			display->notify_pixel(x, y, c);
+			if(console->_ppu->_completed_frame){
+				console->_ppu->_completed_frame = false;
+				display->draw_buffer();
+			}
 		}
+
 		
-		ui8_t tile_value = console->_ppu_bus->read(0x2000);
-		
-		//std::this_thread::sleep_for(std::chrono::nanoseconds(600 / 16));
+		//std::this_thread::sleep_for(std::chrono::nanoseconds(600 / 16 / 20));
 	};
 	
 	
