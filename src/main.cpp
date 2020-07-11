@@ -55,35 +55,61 @@ int main(int argc, char **argv){
 	
 	
 	
+	//run_nestest_cpu(console);
+	
 	openGL_display* display = new openGL_display();
 	display->init();
 	
-	
+	console->get_cpu()->reset();
 	while(1){
 		console->clock();
-		//console->get_cpu()->debug()
+		console->get_cpu()->debug();
 		
-		if(console->_ppu->_is_visible){
+		
+		if(console->_ppu->_completed_frame){
+			console->_ppu->_completed_frame = false;
+			
+			for(int p = 0; p < 8; p++){
+				cout << hex << (int)console->_ppu->_bus->read(0x3F00 + p * 4 + 0);
+				cout << " ";
+				cout << hex << (int)console->_ppu->_bus->read(0x3F00 + p * 4 + 1);
+				cout << " ";
+				cout << hex << (int)console->_ppu->_bus->read(0x3F00 + p * 4 + 2);
+				cout << " ";
+				cout << hex << (int)console->_ppu->_bus->read(0x3F00 + p * 4 + 3);
+				cout << " | " << endl;
+			}
+			
+			for(int r = 0; r < 30; r++){
+				for(int c = 0; c < 32; c++){
+					cout << hex << (int)console->_ppu->_nt_buffer[r][c];
+				}
+				cout << endl;
+			}
+			
+			
+			cin.ignore();
+		}
+		
+		
+		
+		/*if(console->_ppu->_is_visible){
+			
 			ui16_t x = console->_ppu->_current_cycle;
 			ui16_t y = console->_ppu->_current_scanline;
 			ui8_t c = console->_ppu->_color_index;
 			
-			/*
 			std::cout << (int)x;
 			std::cout << " ";
 			std::cout << (int)y;
 			std::cout << std::endl;
-			*/
 			
 			display->notify_pixel(x, y, c);
 			if(console->_ppu->_completed_frame){
 				console->_ppu->_completed_frame = false;
 				display->draw_buffer();
 			}
-		}
-
-		
-		//std::this_thread::sleep_for(std::chrono::nanoseconds(600 / 16 / 20));
+		}*///std::this_thread::sleep_for(std::chrono::nanoseconds(10));
 	};
 	
 	
@@ -189,9 +215,7 @@ int main(int argc, char **argv){
 }
 
 
-/*
 void run_nestest_cpu(nes_console* console){
-	
 	
 	
 	char* file_name = (char*)"resources/nestest.log";
@@ -210,9 +234,9 @@ void run_nestest_cpu(nes_console* console){
 		ui8_t sp = (ui8_t)strtol(line.substr(71, 2).c_str(), NULL, 16); 
 		ui32_t cyc = (ui32_t)strtol(line.substr(90, line.length()-90).c_str(), NULL, 10); 
 		
-		bool r = cpu->compare_state(pc, a, x, y, s, sp, cyc);
+		bool r = console->get_cpu()->compare_state(pc, a, x, y, s, sp, cyc);
 		
-		cpu->debug();
+		console->get_cpu()->debug();
 		if(!r){
 			
 			bool _flag_N = s & 0x80; 
@@ -250,7 +274,7 @@ void run_nestest_cpu(nes_console* console){
 			break;
 		}
 
-		while(!cpu->clock()){
+		while(!console->get_cpu()->clock()){
 			
 			
 		};
@@ -258,5 +282,5 @@ void run_nestest_cpu(nes_console* console){
 	}
 
 	
-}*/
+}
 

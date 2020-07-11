@@ -24,8 +24,7 @@ cartridge::cartridge(char* file_name){
 		}
 		
 		fd.close();
-		
-			
+
 		_mapper = new mapper000(_header->get_n_prg_banks());
 		
 	}

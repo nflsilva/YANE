@@ -17,7 +17,7 @@ openGL_display::~openGL_display(){
 void openGL_display::init(){
 	
 	int argc = 1;
-	char * argv[1] = {"a"};
+	char * argv[1] = { "a" };
 	glutInit(&argc, argv);
 	glutCreateWindow("YANE");
 	

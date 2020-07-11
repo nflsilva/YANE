@@ -19,16 +19,23 @@ private:
 	ui8_t _register_Y;		//Y Register
 	ui8_t _register_X;		//X Register
 	ui16_t _register_PC;	//Program Counter
-	ui8_t _register_S;		//Stack Pointer
+	ui8_t _register_SP;		//Stack Pointer
 	
-	bool _flag_N;			//Negative
-	bool _flag_V;			//Overflow
-	bool _flag_U;			//Unused
-	bool _flag_B;			//Break
-	bool _flag_D;			//Decimal / Unused
-	bool _flag_I;			//Disable Interrupts
-	bool _flag_Z;			//Zero
-	bool _flag_C;			//Cary
+	
+	union {
+		struct {
+			bool flag_C : 1;
+			bool flag_Z : 1;
+			bool flag_I : 1;
+			bool flag_D : 1;
+			bool flag_B : 1;
+			bool flag_U : 1;
+			bool flag_V : 1;
+			bool flag_N : 1;
+		};
+		ui8_t data;
+	} _register_P;
+	
 
 
 	cpu_bus* _bus;
@@ -47,6 +54,7 @@ private:
 	
 	
 public:
+
 	r6502(cpu_bus* bus);
 	~r6502();
 	
@@ -55,7 +63,7 @@ public:
 						ui8_t register_A, 
 						ui8_t register_X, 
 						ui8_t register_Y, 
-						ui8_t state,
+						ui8_t register_P,
 						ui8_t register_S,
 						ui32_t cycles
 						);
@@ -65,6 +73,8 @@ public:
 	void nmi();
 	void reset();
 	void irq();
+	
+	void setup_state(ui16_t register_PC, ui8_t register_P, ui8_t register_SP, ui32_t cycles);
 	
 
 private:
@@ -197,17 +207,11 @@ private:
 	
 	
 	
-	
-	// Helpers
-	void update_flag_N(ui8_t data);
-	void update_flag_Z(ui8_t data);
-	
-	
 	void push(ui8_t data);
 	ui8_t pop();
 	
 	
-	void  change_execution_context(ui16_t vector, bool push_pc, bool set_b);
+	//void  change_execution_context(ui16_t vector, bool push_pc, bool set_b);
 	ui8_t cross_pages_cycles(ui16_t base_address, ui16_t indexed_address);
 	ui8_t perform_branch();
 	

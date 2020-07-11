@@ -16,9 +16,6 @@ void cpu_bus::write(ui16_t address, ui8_t byte){
 		_ppu->write(address & 0x0007, byte);
 	}
 	else if(address >= 0x4020 && address <= 0xFFFF){
-		if(address >= 0x6000 && 0x7000){
-			std::cout << std::hex << (int) address << " - " << (int) byte << std::endl;
-		}
 		_cartridge->write(address, byte);
 	}
 	

@@ -5,17 +5,8 @@ r6502::r6502(cpu_bus* bus) :
 _register_A(0), 
 _register_Y(0), 
 _register_X(0), 
-_register_PC(0xC004), 
-_register_S(0xFD), 
-
-_flag_N(false),
-_flag_V(false),
-_flag_U(true),
-_flag_B(false),
-_flag_D(false),
-_flag_I(true),
-_flag_Z(false),
-_flag_C(false),
+_register_PC(0), 
+_register_SP(0), 
 
 _bus(bus),
 
@@ -24,10 +15,13 @@ _operand_value(0),
 _operand_address(0),
 
 _operation_cycles(0),
-_total_cycles(7)
+_total_cycles(0)
 
 
 {
+	
+	_register_P.data = 0;
+	
 	using a = r6502;
 	r6502_instruction ins[16][16] = {
 		/*0*/
@@ -379,43 +373,60 @@ bool r6502::clock(){
 }
 
 void r6502::reset(){
-	change_execution_context(0xFFFC, false, false);
-	_operation_cycles = 0;
-	_total_cycles = 0;
 	
-}
-void r6502::nmi(){
-	change_execution_context(0xFFFA, true, false);
-	_operation_cycles += 3;
-}
-void r6502::irq(){
-	change_execution_context(0xFFFE, true, false);
-}
-void  r6502::change_execution_context(ui16_t vector, bool push_pc, bool set_b){
-
-	if(push_pc){
-		
-		push(_register_PC >> 8);
-		push(_register_PC);
-
-		int state = 
-		(_flag_N ? 0x80: 0x00) | 
-		(_flag_V ? 0x40: 0x00) | 
-		(_flag_U ? 0x20: 0x00) |
-		(set_b  ? true : _flag_B ? 0x10: 0x00) |
-		(_flag_D ? 0x08: 0x00) |
-		(_flag_I ? 0x04: 0x00) |
-		(_flag_Z ? 0x02: 0x00) |
-		(_flag_C ? 0x01: 0x00);
-		push(state);
-	}
-
-	_flag_I = false;
-	
+	ui16_t vector = 0xFFFC;
 	ui8_t low_pc = read(vector) & 0x00FF;
 	ui8_t high_pc = read(vector + 1) & 0x00FF;
 	_register_PC = (high_pc << 8) | low_pc;
 	
+	
+	_operand_value = 0;
+	_operand_address = 0;
+	
+	_operation_cycles = 8;
+	_total_cycles = 0;
+	
+}
+void r6502::nmi(){
+
+	push(_register_PC >> 8);
+	push(_register_PC);
+	
+	_register_P.flag_B = false;
+	_register_P.flag_U = true;
+	_register_P.flag_I = true;
+	
+	push(_register_P.data);
+	
+	ui16_t vector = 0xFFFA;
+	ui8_t low_pc = read(vector) & 0x00FF;
+	ui8_t high_pc = read(vector + 1) & 0x00FF;
+	_register_PC = (high_pc << 8) | low_pc;
+	
+	_operation_cycles = 8;
+	
+}
+void r6502::irq(){
+	
+	if(!_register_P.flag_I){
+		
+		push(_register_PC >> 8);
+		push(_register_PC);
+		
+		_register_P.flag_B = false;
+		_register_P.flag_U = true;
+		_register_P.flag_I = true;
+		
+		push(_register_P.data);
+		
+		ui16_t vector = 0xFFFE;
+		ui8_t low_pc = read(vector) & 0x00FF;
+		ui8_t high_pc = read(vector + 1) & 0x00FF;
+		_register_PC = (high_pc << 8) | low_pc;
+		
+		_operation_cycles = 7;
+	}
+
 }
 
 
@@ -521,8 +532,8 @@ ui8_t r6502::indirect_y_indexed_addressing(){
 
 
 ui8_t r6502::adc_operation(){
-	ui16_t result = _register_A + _operand_value + (_flag_C ? 1 : 0);
-	_flag_C = result > 0xFF;
+	ui16_t result = _register_A + _operand_value + (_register_P.flag_C ? 1 : 0);
+	_register_P.flag_C = result > 0xFF;
 	
 	/*
 	bool msb_A = _register_A & 0x80;
@@ -531,26 +542,26 @@ ui8_t r6502::adc_operation(){
 	_flag_V = (msb_A != msb_R) && (~(msb_A != msb_M));
 	*/
 	
-	_flag_V = ((~(_register_A ^ _operand_value) & (_register_A ^ result)) & 0x80) != 0x00;
+	_register_P.flag_V = ((~(_register_A ^ _operand_value) & (_register_A ^ result)) & 0x80) != 0x00;
 	
 	
 	_register_A = result;
-	update_flag_N(_register_A);
-	update_flag_Z(_register_A);
+	_register_P.flag_N = _register_A & 0x80;
+	_register_P.flag_Z = _register_A == 0;
 
 	return 1;
 }
 ui8_t r6502::and_operation(){
 	_register_A &= _operand_value;
-	update_flag_Z(_register_A);
-	update_flag_N(_register_A);
+	_register_P.flag_N = _register_A & 0x80;
+	_register_P.flag_Z = _register_A == 0;
 	return 1;
 }
 ui8_t r6502::asl_operation(){
-	_flag_C = _operand_value & 0x80;
+	_register_P.flag_C = _operand_value & 0x80;
 	_operand_value <<= 1;
-	update_flag_N(_operand_value);
-	update_flag_Z(_operand_value);
+	_register_P.flag_N = _operand_value & 0x80;
+	_register_P.flag_Z = _operand_value == 0;
 	
 	if(_is_implied){
 		_register_A = _operand_value;
@@ -563,139 +574,156 @@ ui8_t r6502::asl_operation(){
 }
 
 ui8_t r6502::bcc_operation(){
-	if(!_flag_C)
+	if(!_register_P.flag_C)
 		return perform_branch();
 	return 0;
 }
 ui8_t r6502::bcs_operation(){
-	if(_flag_C)
+	if(_register_P.flag_C)
 		return perform_branch();
 	return 0;
 }
 ui8_t r6502::beq_operation(){
-	if(_flag_Z)
+	if(_register_P.flag_Z)
 		return perform_branch();
 	return 0;
 }
 ui8_t r6502::bit_operation(){
 	ui8_t result = _register_A & _operand_value;
-	update_flag_Z(result);
-	_flag_N = (_operand_value & 0x80) != 0;
-	_flag_V = (_operand_value & 0x40) != 0;
+	_register_P.flag_Z = result == 0;
+	_register_P.flag_N = _operand_value & 0x80;
+	_register_P.flag_V = _operand_value & 0x40;
 	return 1;
 }
 ui8_t r6502::bmi_operation(){
-	if(_flag_N)
+	if(_register_P.flag_N)
 		return perform_branch();
 	return 0;
 }
 ui8_t r6502::bne_operation(){
-	if(!_flag_Z)
+	if(!_register_P.flag_Z)
 		return perform_branch();
 	return 0;
 }
 ui8_t r6502::bpl_operation(){
-	if(!_flag_N)
+	if(!_register_P.flag_N)
 		return perform_branch();
 	return 0;
 }
 ui8_t r6502::brk_operation(){
-	_flag_B = true;
-	_flag_U = true;
+
+	_register_PC++;
+	
+	_register_P.flag_I = true;
+	push(_register_PC >> 8);
+	push(_register_PC);
+		
+	_register_P.flag_B = true;
+	push(_register_P.data);
+	_register_P.flag_B = false;
+	
+	ui16_t vector = 0xFFFE;
+	ui8_t low_pc = read(vector) & 0x00FF;
+	ui8_t high_pc = read(vector + 1) & 0x00FF;
+	_register_PC = (high_pc << 8) | low_pc;
+	
+	_operation_cycles = 7;
+	
+	
 	return 0;
 }
 ui8_t r6502::bvc_operation(){
-	if(!_flag_V)
+	if(!_register_P.flag_V)
 		return perform_branch();
 	return 0;
 }
 ui8_t r6502::bvs_operation(){
-	if(_flag_V)
+	if(_register_P.flag_V)
 		return perform_branch();
 	return 0;
 }
 ui8_t r6502::clc_operation(){
-	_flag_C = false;
+	_register_P.flag_C = false;
 	return 0;
 }
 ui8_t r6502::cld_operation(){
-	_flag_D = false;
+	_register_P.flag_D = false;
 	return 0;
 }
 ui8_t r6502::cli_operation(){
-	_flag_I = false;
+	_register_P.flag_I = false;
 	return 0;
 }
 ui8_t r6502::clv_operation(){
-	_flag_V = false;
+	_register_P.flag_V = false;
 	return 0;
 }
 ui8_t r6502::cmp_operation(){
 	ui8_t result = _register_A - _operand_value;
-	update_flag_N(result);
-	update_flag_Z(result);
-	_flag_C = _register_A >= _operand_value;
+	_register_P.flag_N = result & 0x80;
+	_register_P.flag_Z = result == 0;
+	_register_P.flag_C = _register_A >= _operand_value;
 	return 1;
 }
 ui8_t r6502::cpx_operation(){
 	ui8_t result = _register_X - _operand_value;
-	update_flag_N(result);
-	update_flag_Z(result);
-	_flag_C = _register_X >= _operand_value;
+	_register_P.flag_N = result & 0x80;
+	_register_P.flag_Z = result == 0;
+	_register_P.flag_C = _register_X >= _operand_value;
 	return 1;
 }
 ui8_t r6502::cpy_operation(){
 	ui8_t result = _register_Y - _operand_value;
-	update_flag_N(result);
-	update_flag_Z(result);
-	_flag_C = _register_Y >= _operand_value;
+	_register_P.flag_N = result & 0x80;
+	_register_P.flag_Z = result == 0;
+	_register_P.flag_C = _register_Y >= _operand_value;
 	return 1;
 }
 
 ui8_t r6502::dec_operation(){
 	_operand_value--;
 	write(_operand_address, _operand_value);
-	update_flag_N(_operand_value);
-	update_flag_Z(_operand_value);
+	_register_P.flag_N = _operand_value & 0x80;
+	_register_P.flag_Z = _operand_value == 0;
 	return 2;
 }
 ui8_t r6502::dex_operation(){
 	_register_X--;
-	update_flag_N(_register_X);
-	update_flag_Z(_register_X);
+	_register_P.flag_N = _register_X & 0x80;
+	_register_P.flag_Z = _register_X == 0;
 	return 0;
 }
 ui8_t r6502::dey_operation(){
 	_register_Y--;
-	update_flag_N(_register_Y);
-	update_flag_Z(_register_Y);
+	_register_P.flag_N = _register_Y & 0x80;
+	_register_P.flag_Z = _register_Y == 0;
 	return 0;
 }
 
 ui8_t r6502::eor_operation(){
 	_register_A ^= _operand_value;
-	update_flag_N(_register_A);
-	update_flag_Z(_register_A);
+	_register_P.flag_N = _register_A & 0x80;
+	_register_P.flag_Z = _register_A == 0;
 	return 1;
 }
 
 ui8_t r6502::inc_operation(){
 	_operand_value++;
 	write(_operand_address, _operand_value);
-	update_flag_N(_operand_value);
-	update_flag_Z(_operand_value);
+	_register_P.flag_N = _operand_value & 0x80;
+	_register_P.flag_Z = _operand_value == 0;
 	return 2;
 }
 ui8_t r6502::inx_operation(){
 	_register_X++;
-	update_flag_N(_register_X);
-	update_flag_Z(_register_X);
+	_register_P.flag_N = _register_X & 0x80;
+	_register_P.flag_Z = _register_X == 0;
 	return 0;
 }
 ui8_t r6502::iny_operation(){
 	_register_Y++;
-	update_flag_N(_register_Y);
-	update_flag_Z(_register_Y);
+	_register_P.flag_N = _register_Y & 0x80;
+	_register_P.flag_Z = _register_Y == 0;
 	return 0;
 }
 
@@ -716,27 +744,27 @@ ui8_t r6502::jsr_operation(){
 
 ui8_t r6502::lda_operation(){
 	_register_A = _operand_value;
-	update_flag_N(_register_A);
-	update_flag_Z(_register_A);
+	_register_P.flag_N = _register_A & 0x80;
+	_register_P.flag_Z = _register_A == 0;
 	return 1;
 }
 ui8_t r6502::ldx_operation(){
 	_register_X = _operand_value;
-	update_flag_N(_register_X);
-	update_flag_Z(_register_X);
+	_register_P.flag_N = _register_X & 0x80;
+	_register_P.flag_Z = _register_X == 0;
 	return 1;
 }
 ui8_t r6502::ldy_operation(){
 	_register_Y = _operand_value;
-	update_flag_N(_register_Y);
-	update_flag_Z(_register_Y);
+	_register_P.flag_N = _register_Y & 0x80;
+	_register_P.flag_Z = _register_Y == 0;
 	return 1;
 }
 ui8_t r6502::lsr_operation(){
-	_flag_C = _operand_value & 0x01;
+	_register_P.flag_C = _operand_value & 0x01;
 	_operand_value >>= 1;
-	update_flag_N(_operand_value);
-	update_flag_Z(_operand_value);
+	_register_P.flag_N = _operand_value & 0x80;
+	_register_P.flag_Z = _operand_value == 0;
 	
 	if(_is_implied){
 		_register_A = _operand_value;
@@ -755,8 +783,8 @@ ui8_t r6502::nop_operation(){
 
 ui8_t r6502::ora_operation(){
 	_register_A |= _operand_value;
-	update_flag_N(_register_A);
-	update_flag_Z(_register_A);
+	_register_P.flag_N = _register_A & 0x80;
+	_register_P.flag_Z = _register_A == 0;
 	return 1;
 }
 
@@ -765,47 +793,33 @@ ui8_t r6502::pha_operation(){
 	return 1;
 }
 ui8_t r6502::php_operation(){
-	int state = 
-	(_flag_N ? 0x80: 0x00) | 
-	(_flag_V ? 0x40: 0x00) | 
-	(true   ? 0x20: 0x00) |
-	(true   ? 0x10: 0x00) |
-	(_flag_D ? 0x08: 0x00) |
-	(_flag_I ? 0x04: 0x00) |
-	(_flag_Z ? 0x02: 0x00) |
-	(_flag_C ? 0x01: 0x00);
-	
-	push(state);
+	push(_register_P.data | 0x30);
 	return 1;
 }
 ui8_t r6502::pla_operation(){
 	_register_A = pop();
-	update_flag_N(_register_A);
-	update_flag_Z(_register_A);
+	_register_P.flag_N = _register_A & 0x80;
+	_register_P.flag_Z = _register_A == 0;
 	return 1;
 }
 ui8_t r6502::plp_operation(){
-	ui8_t state = pop();
-	_flag_N = state & 0x80; 
-	_flag_V = state & 0x40;
-	//_flag_U = state & 0x20;
-	//_flag_B = state & 0x10;
-	_flag_D = state & 0x08;
-	_flag_I = state & 0x04;
-	_flag_Z = state & 0x02;
-	_flag_C = state & 0x01;
+	bool current_flag_U = _register_P.flag_U;
+	bool current_flag_B = _register_P.flag_B;
+	_register_P.data = pop();
+	_register_P.flag_U = current_flag_U;
+	_register_P.flag_B = current_flag_B;
 	return 1;
 }
 
 ui8_t r6502::rol_operation(){
 	
-	ui16_t result = (_operand_value << 1) | (_flag_C ? 0x01 : 0x00);
-	_flag_C = result & 0xFF00;
+	ui16_t result = (_operand_value << 1) | (_register_P.flag_C ? 0x01 : 0x00);
+	_register_P.flag_C = result & 0xFF00;
 	_operand_value = result;
 	
 
-	update_flag_N(_operand_value);
-	update_flag_Z(_operand_value);
+	_register_P.flag_N = _operand_value & 0x80;
+	_register_P.flag_Z = _operand_value == 0;
 	
 	if(_is_implied){
 		_register_A = _operand_value;
@@ -819,11 +833,11 @@ ui8_t r6502::rol_operation(){
 ui8_t r6502::ror_operation(){
 	bool aux_c = _operand_value & 0x01;
 	_operand_value >>= 1;
-	_operand_value |= (_flag_C ? 0x80 : 0x00);
-	_flag_C = aux_c;
+	_operand_value |= (_register_P.flag_C ? 0x80 : 0x00);
+	_register_P.flag_C = aux_c;
 	
-	update_flag_N(_operand_value);
-	update_flag_Z(_operand_value);
+	_register_P.flag_N = _operand_value & 0x80;
+	_register_P.flag_Z = _operand_value == 0;
 	
 	if(_is_implied){
 		_register_A = _operand_value;
@@ -861,15 +875,15 @@ ui8_t r6502::sbc_operation(){
 	return 1;
 }
 ui8_t r6502::sec_operation(){
-	_flag_C = true;
+	_register_P.flag_C = true;
 	return 0;
 }
 ui8_t r6502::sed_operation(){
-	_flag_D = true;
+	_register_P.flag_D = true;
 	return 0;
 }
 ui8_t r6502::sei_operation(){
-	_flag_I = true;
+	_register_P.flag_I = true;
 	return 0;
 }
 ui8_t r6502::sta_operation(){
@@ -887,36 +901,36 @@ ui8_t r6502::sty_operation(){
 
 ui8_t r6502::tax_operation(){
 	_register_X = _register_A;
-	update_flag_N(_register_X);
-	update_flag_Z(_register_X);
+	_register_P.flag_N = _register_X & 0x80;
+	_register_P.flag_Z = _register_X == 0;
 	return 0;
 }
 ui8_t r6502::tay_operation(){
 	_register_Y = _register_A;
-	update_flag_N(_register_Y);
-	update_flag_Z(_register_Y);
+	_register_P.flag_N = _register_Y & 0x80;
+	_register_P.flag_Z = _register_Y == 0;
 	return 0;
 }
 ui8_t r6502::tsx_operation(){
-	_register_X = _register_S;
-	update_flag_N(_register_X);
-	update_flag_Z(_register_X);
+	_register_X = _register_SP;
+	_register_P.flag_N = _register_X & 0x80;
+	_register_P.flag_Z = _register_X == 0;
 	return 0;
 }
 ui8_t r6502::txa_operation(){
 	_register_A = _register_X;
-	update_flag_N(_register_A);
-	update_flag_Z(_register_A);
+	_register_P.flag_N = _register_A & 0x80;
+	_register_P.flag_Z = _register_A == 0;
 	return 0;
 }
 ui8_t r6502::txs_operation(){
-	_register_S = _register_X;
+	_register_SP = _register_X;
 	return 0;
 }
 ui8_t r6502::tya_operation(){
 	_register_A = _register_Y;
-	update_flag_N(_register_A);
-	update_flag_Z(_register_A);
+	_register_P.flag_N = _register_A & 0x80;
+	_register_P.flag_Z = _register_A == 0;
 	return 0;
 }
 
@@ -1002,12 +1016,6 @@ ui8_t r6502::stp_operation(){
 
 
 //Helper methods
-void r6502::update_flag_N(ui8_t data){
-	_flag_N = data & 0x80;
-}
-void r6502::update_flag_Z(ui8_t data){
-	_flag_Z = data == 0x00;
-}
 ui8_t r6502::cross_pages_cycles(ui16_t base_address, ui16_t indexed_address){
 	
 	if((base_address & 0xFF00) != (indexed_address & 0xFF00) || 
@@ -1018,13 +1026,13 @@ ui8_t r6502::cross_pages_cycles(ui16_t base_address, ui16_t indexed_address){
 	return 0;
 }
 void r6502::push(ui8_t data){
-	write(0x0100 + _register_S, data);
-	_register_S--;
+	write(0x0100 + _register_SP, data);
+	_register_SP--;
 }
 ui8_t r6502::pop() {
-	_register_S++;
+	_register_SP++;
 	_operation_cycles++;
-	return read(0x0100 + _register_S);
+	return read(0x0100 + _register_SP);
 }
 ui8_t r6502::perform_branch(){
 	ui8_t cycles = cross_pages_cycles(_register_PC, _operand_address);
@@ -1034,23 +1042,20 @@ ui8_t r6502::perform_branch(){
 
 
 //Debug
+void r6502::setup_state(ui16_t register_PC, ui8_t register_P, ui8_t register_SP, ui32_t cycles){
+	_register_PC = register_PC;
+	_register_P.data = register_P;
+	_register_SP = register_SP;
+	_total_cycles = cycles;
+}
 bool r6502::compare_state(ui16_t register_PC, ui8_t register_A, ui8_t register_X, ui8_t register_Y, ui8_t state, ui8_t register_S, ui32_t cycles){
-	ui8_t _state = 
-	(_flag_N ? 0x80: 0x00) | 
-	(_flag_V ? 0x40: 0x00) | 
-	(_flag_U ? 0x20: 0x00) |
-	(_flag_B ? 0x10: 0x00) |
-	(_flag_D ? 0x08: 0x00) |
-	(_flag_I ? 0x04: 0x00) |
-	(_flag_Z ? 0x02: 0x00) |
-	(_flag_C ? 0x01: 0x00);
 	
 	bool pc = _register_PC == register_PC;
 	bool a = _register_A == register_A;
 	bool x = _register_X == register_X;
 	bool y = _register_Y == register_Y;
-	bool p = state == _state;
-	bool s = _register_S == register_S;
+	bool p = state == _register_P.data;
+	bool s = _register_SP == register_S;
 	bool cyc = _total_cycles == cycles;
 	
 	return pc && a && x && y && p && s && cyc;
@@ -1076,37 +1081,28 @@ void r6502::debug(){
 	ss.str(std::string());
 	ss << std::hex << ((int)_register_Y);
 	debug_string += " Y:" + ss.str();
-	
-	int state = 
-	(_flag_N ? 0x80: 0x00) | 
-	(_flag_V ? 0x40: 0x00) | 
-	(_flag_U ? 0x20: 0x00) |
-	(_flag_B ? 0x10: 0x00) |
-	(_flag_D ? 0x08: 0x00) |
-	(_flag_I ? 0x04: 0x00) |
-	(_flag_Z ? 0x02: 0x00) |
-	(_flag_C ? 0x01: 0x00);
+
 	
 	ss.str(std::string());
-	ss << std::hex << state;
+	ss << std::hex << (int)_register_P.data;
 	debug_string += " P:" + ss.str();
 	
 	ss.str(std::string());
-	ss << std::hex << ((int)_register_S);
+	ss << std::hex << ((int)_register_SP);
 	debug_string += " SP:" + ss.str();
 	
 
 	std::cout << debug_string
 	<< " CYC:" << ((int)_total_cycles)
 	<< " \t "
-	<< " N:" << int(_flag_N)
-	<< " V:" << int(_flag_V)
-	<< " U:" << int(_flag_U)
-	<< " B:" << int(_flag_B)
-	<< " D:" << int(_flag_D)
-	<< " I:" << int(_flag_I)
-	<< " Z:" << int(_flag_Z)
-	<< " C:" << int(_flag_C)
+	<< " N:" << int(_register_P.flag_N)
+	<< " V:" << int(_register_P.flag_V)
+	<< " U:" << int(_register_P.flag_U)
+	<< " B:" << int(_register_P.flag_B)
+	<< " D:" << int(_register_P.flag_D)
+	<< " I:" << int(_register_P.flag_I)
+	<< " Z:" << int(_register_P.flag_Z)
+	<< " C:" << int(_register_P.flag_C)
 
 	<< std::endl;
 	
