@@ -1,7 +1,6 @@
 # YANE - Yet Another Nes Emulator
 
 My implementation of a NES Emulator, using the most basic of interpretation methods.
-The project is still in development using the CodeLite IDE.
 
 
 
@@ -19,8 +18,14 @@ The project is still in development using the CodeLite IDE.
 
 ** 2C02 PPU
 - [Registers](http://wiki.nesdev.com/w/index.php/PPU_registers)
+- [Palettes](https://wiki.nesdev.com/w/index.php/PPU_palettes)
+- [Nametables](https://wiki.nesdev.com/w/index.php/PPU_nametables)
+- [Attribute Memory](https://wiki.nesdev.com/w/index.php/PPU_attribute_tables)
+- [Rendering Cycle](https://wiki.nesdev.com/w/index.php/PPU_rendering)
+
 
 
 ** General
 - [OneLoneCoder Example Project](https://github.com/OneLoneCoder/olcNES)
+- [Mesen NES Emulator Project](https://github.com/SourMesen/Mesen)
 - [Testing](wiki.nesdev.com/w/index.php/Emulator_tests)
