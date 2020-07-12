@@ -55,8 +55,19 @@ private:
 	ui8_t _ppudata;
 	ui8_t _ppudata_buffer;
 	
+public:
+	ui8_t _color_index;
 	ui16_t _current_cycle;
 	ui16_t _current_scanline;
+private: 
+	ui16_t _coarse_x;
+	ui16_t _coarse_y;
+	
+	ui8_t _pattern_low_bit_shifter;
+	ui8_t _pattern_high_bit_shifter;
+	ui8_t _palette_value;
+	
+	
 	
 	bool _address_latch;
 	bool _call_nmi_cpu;
@@ -72,10 +83,12 @@ public:
 	~u2c02();
 	
 	
-	void clock();
-	bool call_nmi();
 	
+	bool is_visible();
+	bool call_nmi();
 	bool completed_frame();
+
+	void clock();
 
 	ui8_t read(ui16_t address);
 	void write(ui16_t address, ui8_t _data);

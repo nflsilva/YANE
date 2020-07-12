@@ -46,7 +46,7 @@ void tick(nes_console* console){
 int main(int argc, char **argv){
 	
 	
-	char* file_name = (char*)"resources/dko.nes";
+	char* file_name = (char*)"resources/nestest.nes";
 	cartridge* cart = new cartridge(file_name);
 	nes_console* console = new nes_console(cart);
 	
@@ -54,156 +54,56 @@ int main(int argc, char **argv){
 	
 	//run_nestest_cpu(console);
 	
-	//openGL_display* display = new openGL_display();
-	//display->init();
+	openGL_display* display = new openGL_display();
+	display->init();
 	
 	console->get_cpu()->reset();
 	while(1){
 		console->clock();
-		console->get_cpu()->debug();
+		//console->get_cpu()->debug();
 		
-		if(console->_ppu->completed_frame()){
-			for(int p = 0; p < 8; p++){
-				cout << hex << (int)console->_ppu_bus->read(0x3F00 + p * 4 + 0);
-				cout << " ";
-				cout << hex << (int)console->_ppu_bus->read(0x3F00 + p * 4 + 1);
-				cout << " ";
-				cout << hex << (int)console->_ppu_bus->read(0x3F00 + p * 4 + 2);
-				cout << " ";
-				cout << hex << (int)console->_ppu_bus->read(0x3F00 + p * 4 + 3);
-				cout << " | " << endl;
-			}
-			
-			
-			for(int r = 0; r < 30; r++){
-				for(int c = 0; c < 32; c++){
-					cout << hex << (int)console->_ppu_bus->read(0x2000 + r * 32 + c);
-				}
-				cout << endl;
-			}
-			
-			
-			cin.ignore();
-		}
-		
-		
-		
-		/*if(console->_ppu->_is_visible){
+		if(console->_ppu->is_visible()){
 			
 			ui16_t x = console->_ppu->_current_cycle;
 			ui16_t y = console->_ppu->_current_scanline;
 			ui8_t c = console->_ppu->_color_index;
-			
+			/*
 			std::cout << (int)x;
 			std::cout << " ";
 			std::cout << (int)y;
 			std::cout << std::endl;
-			
+			*/
 			display->notify_pixel(x, y, c);
-			if(console->_ppu->_completed_frame){
-				console->_ppu->_completed_frame = false;
+			
+			if(console->_ppu->completed_frame()){
 				display->draw_buffer();
-			}
-		}*///std::this_thread::sleep_for(std::chrono::nanoseconds(10));
-	};
-	
-	
-	/*
-	float* actual_frame = new float[GL_DISPLAY_WIDTH * GL_DISPLAY_HEIGHT * 4];
-	//background
-	for (int i = 0; i < GL_DISPLAY_HEIGHT; i++) {
-		for (int j = 0; j < GL_DISPLAY_WIDTH * 4; j+=4) {
-			actual_frame[i * GL_DISPLAY_WIDTH * 4 + j + 0] = 100.0 / 255.0;
-			actual_frame[i * GL_DISPLAY_WIDTH * 4 + j + 1] = 100.0 / 255.0;
-			actual_frame[i * GL_DISPLAY_WIDTH * 4 + j + 2] = 100.0 / 255.0;
-			actual_frame[i * GL_DISPLAY_WIDTH * 4 + j + 3] = 1.0;
-		}
-	}
-	
-	float* colors = new float[12] {
-		1.0, 0.0, 0.0,
-		0.0, 1.0, 0.0,
-		0.0, 0.0, 1.0, 
-		1.0, 1.0, 1.0
-	};
-	
-
-	
-	std::thread tick_console(tick, console);
-
-	
-	while(1){
-
-		display->notify_pixels(actual_frame);
-
-		
-		for(int tile_y = 0; tile_y < 30; tile_y++){
-			for(int tile_x = 0; tile_x < 32; tile_x++){
-				ui8_t tile_value = console->_ppu_bus->read(0x2000 + tile_x + (tile_y * 32));
 				
-				//cout << hex << (int)tile_value;
-				
-				switch(tile_value){
-					case 0x20:
-						colors[0] = 0;
-						colors[1] = 0;
-						colors[2] = 0;
-						break;
-					default:
-						colors[0] = 1;
-						colors[1] = 1;
-						colors[2] = 1;
-						break;
+				/*
+				for(int p = 0; p < 8; p++){
+					cout << hex << (int)console->_ppu_bus->read(0x3F00 + p * 4 + 0);
+					cout << " ";
+					cout << hex << (int)console->_ppu_bus->read(0x3F00 + p * 4 + 1);
+					cout << " ";
+					cout << hex << (int)console->_ppu_bus->read(0x3F00 + p * 4 + 2);
+					cout << " ";
+					cout << hex << (int)console->_ppu_bus->read(0x3F00 + p * 4 + 3);
+					cout << " | " << endl;
 				}
-				draw_square_in_screen_tile(actual_frame, tile_x, tile_y, colors);
+				
+				for(int r = 0; r < 32; r++){
+					for(int c = 0; c < 32; c++){
+						cout << hex << (int)console->_ppu_bus->read(0x2000 + r * 32 + c);
+					}
+					cout << endl;
+				}
+				
+				
+				cin.ignore();*/
+				
 			}
 		}
-
-		// draw paletts
-		int y = 40;
-		for(int p = 0; p < 8; p++){
-			
-			if(p == 4) y-= 20;
-			
-			for(int pp = 0; pp < 4; pp++){
-				int pp_offset = pp * 3; 
-				colors[0 + pp_offset] = display->_pal_screen_colors[console->_ppu_bus->read(0x3F00 + pp + p * 4) * 3 + 0] / 255.0;
-				colors[1 + pp_offset] = display->_pal_screen_colors[console->_ppu_bus->read(0x3F00 + pp + p * 4) * 3 + 1] / 255.0;
-				colors[2 + pp_offset] = display->_pal_screen_colors[console->_ppu_bus->read(0x3F00 + pp + p * 4) * 3 + 2] / 255.0;
-			}
-			
-			draw_palette(p % 4, y, actual_frame, colors);
-		};
-		
-				
-		draw_square_in_screen_tile(actual_frame, 0, 0, colors);
-		draw_square_in_screen_tile(actual_frame, 2, 0, &colors[3]);
-		draw_square_in_screen_tile(actual_frame, 4, 0, &colors[6]);
-		
-		draw_square_in_screen_tile(actual_frame, 6, 0, colors);
-		draw_square_in_screen_tile(actual_frame, 8, 0, &colors[3]);
-		draw_square_in_screen_tile(actual_frame, 10, 0, &colors[6]);
-		
-		draw_square_in_screen_tile(actual_frame, 12, 0, colors);
-		draw_square_in_screen_tile(actual_frame, 14, 0, &colors[3]);
-		draw_square_in_screen_tile(actual_frame, 16, 0, &colors[6]);
-		
-		draw_square_in_screen_tile(actual_frame, 18, 0, colors);
-		draw_square_in_screen_tile(actual_frame, 20, 0, &colors[3]);
-		draw_square_in_screen_tile(actual_frame, 22, 0, &colors[6]);
-		
-		draw_square_in_screen_tile(actual_frame, 24, 0, colors);
-		draw_square_in_screen_tile(actual_frame, 26, 0, &colors[3]);
-		draw_square_in_screen_tile(actual_frame, 28, 0, &colors[6]);
-		
-		draw_square_in_screen_tile(actual_frame, 30, 0, colors);
-		//draw_square_in_screen_tile(actual_frame, 32, 32, &colors[3]);	
-		//console->get_cpu()->debug();
-
-		
-	};*/
-	
-	//tick(console);
+		//std::this_thread::sleep_for(std::chrono::nanoseconds(1));
+	};
 	
 	printf("Done!\n");
 	return 0;

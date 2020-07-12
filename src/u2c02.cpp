@@ -7,8 +7,17 @@ _ppudata(0),
 
 _ppudata_buffer(0),
 
+_color_index(0),
 _current_cycle(0),
 _current_scanline(0),
+	
+_coarse_x(0),
+_coarse_y(0),
+	
+_pattern_low_bit_shifter(0),
+_pattern_high_bit_shifter(0),
+
+
 
 _address_latch(false), 
 _call_nmi_cpu(false),
@@ -28,7 +37,9 @@ _bus(b)
 u2c02::~u2c02(){
 }
 
-
+bool u2c02::is_visible(){
+	return _is_visible;
+}
 bool u2c02::call_nmi(){
 	bool d = _call_nmi_cpu;
 	_call_nmi_cpu = false;
@@ -44,6 +55,53 @@ void u2c02::clock(){
 	
 
 	
+	if(_current_cycle >= 0 && _current_cycle < 257 && _current_scanline >=0 && _current_scanline < 240){
+
+
+		ui8_t cycle_phase = _current_cycle % 8;
+		switch(cycle_phase){
+			case 0:
+
+				_coarse_x = _current_cycle / 8;
+				
+				ui8_t nametable_number = 
+				((ui8_t)_ppuctrl.nametable_base_address_y) << 1 | 
+				((ui8_t)_ppuctrl.nametable_base_address_x);
+				
+				ui16_t nametable_address = 0x2000 + nametable_number * 0x0400;
+
+				ui8_t tile_id = _bus->read(nametable_address + _coarse_x + (_coarse_y * 32));
+				ui8_t tile_attribute = _bus->read(nametable_address + 0x03C0 + _coarse_x / 4 + ((_coarse_y / 4) * 8));
+
+				ui8_t attribute_x = (_coarse_x % 4) > 1 ? 0x1 : 0x0;
+				ui8_t attribute_y = (_coarse_y % 4) > 1 ? 0x1 : 0x0;
+				ui8_t attribute_xy = attribute_y << 1 | attribute_x;
+				_palette_value = (tile_attribute >> (attribute_xy * 2)) & 0x03;
+				
+				ui16_t pattern_address = _ppuctrl.background_pattern_base_address ? 0x1000 : 0x0000;
+				_pattern_low_bit_shifter = _bus->read(pattern_address + tile_id * 16 + _current_scanline % 8);
+				_pattern_high_bit_shifter = _bus->read(pattern_address + tile_id * 16 + 8 + _current_scanline % 8);
+
+				break;
+		}
+
+		ui8_t low_pattern = _pattern_low_bit_shifter & 0x80 ? 0x1 : 0x0;
+		ui8_t high_pattern = _pattern_high_bit_shifter & 0x80 ? 0x1 : 0x0;
+		ui8_t pixel_value = high_pattern << 1 | low_pattern;
+
+
+		_color_index = _bus->read(0x3F00 + (_palette_value * 4) + pixel_value);
+
+		_pattern_low_bit_shifter <<= 1;
+		_pattern_high_bit_shifter <<= 1;
+		_is_visible = true;
+
+	}
+	else {
+		_is_visible = false;
+	}
+	
+	
 	if(_current_scanline == 241 && _current_cycle == 1){
 		_ppustatus.vertical_blank = true;
 		if(_ppuctrl.generate_nmi){
@@ -54,12 +112,12 @@ void u2c02::clock(){
 		_ppustatus.vertical_blank = false;
 	}
 	
-	
 	_current_cycle++;
 	if(_current_cycle == 341){
 		
 		_current_cycle = 0;
 		_current_scanline++;
+		_coarse_y = _current_scanline / 8;
 
 		if(_current_scanline == 261){
 			_current_scanline = 0;

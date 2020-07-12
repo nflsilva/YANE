@@ -342,10 +342,6 @@ bool r6502::clock(){
 
 	bool r = false;
 	
-	if(_register_PC == 0xF208){
-		__print = true;
-	}
-	
 	if(_operation_cycles == 0) {
 		_operation_opcode = read(_register_PC++);
 		
@@ -798,6 +794,7 @@ ui8_t r6502::pha_operation(){
 }
 ui8_t r6502::php_operation(){
 	push(_register_P.data | 0x30);
+	_register_P.flag_B = false;
 	return 2;
 }
 ui8_t r6502::pla_operation(){
