@@ -27,17 +27,14 @@ void draw_square(float* frame, int x, int y, float* color){
 		}
 	}
 }
-
 void draw_palette(int palette_number, int y, float* frame, float* colors){
 	for(int p = 0; p < 4; p++){
 		draw_square(frame, (p + 1) * 10.0 + palette_number * 50.0, y,  	&colors[p * 3]);
 	}
 }
-
 void draw_square_in_screen_tile(float* frame, int tile_x, int tile_y, float* color){
 	draw_square(frame, tile_x * 8, tile_y * 8, color);
 }
-
 void tick(nes_console* console){
 	while(1){
 		console->clock();
@@ -49,7 +46,7 @@ void tick(nes_console* console){
 int main(int argc, char **argv){
 	
 	
-	char* file_name = (char*)"resources/nestest.nes";
+	char* file_name = (char*)"resources/dko.nes";
 	cartridge* cart = new cartridge(file_name);
 	nes_console* console = new nes_console(cart);
 	
@@ -57,32 +54,30 @@ int main(int argc, char **argv){
 	
 	//run_nestest_cpu(console);
 	
-	openGL_display* display = new openGL_display();
-	display->init();
+	//openGL_display* display = new openGL_display();
+	//display->init();
 	
 	console->get_cpu()->reset();
 	while(1){
 		console->clock();
 		console->get_cpu()->debug();
 		
-		
-		if(console->_ppu->_completed_frame){
-			console->_ppu->_completed_frame = false;
-			
+		if(console->_ppu->completed_frame()){
 			for(int p = 0; p < 8; p++){
-				cout << hex << (int)console->_ppu->_bus->read(0x3F00 + p * 4 + 0);
+				cout << hex << (int)console->_ppu_bus->read(0x3F00 + p * 4 + 0);
 				cout << " ";
-				cout << hex << (int)console->_ppu->_bus->read(0x3F00 + p * 4 + 1);
+				cout << hex << (int)console->_ppu_bus->read(0x3F00 + p * 4 + 1);
 				cout << " ";
-				cout << hex << (int)console->_ppu->_bus->read(0x3F00 + p * 4 + 2);
+				cout << hex << (int)console->_ppu_bus->read(0x3F00 + p * 4 + 2);
 				cout << " ";
-				cout << hex << (int)console->_ppu->_bus->read(0x3F00 + p * 4 + 3);
+				cout << hex << (int)console->_ppu_bus->read(0x3F00 + p * 4 + 3);
 				cout << " | " << endl;
 			}
 			
+			
 			for(int r = 0; r < 30; r++){
 				for(int c = 0; c < 32; c++){
-					cout << hex << (int)console->_ppu->_nt_buffer[r][c];
+					cout << hex << (int)console->_ppu_bus->read(0x2000 + r * 32 + c);
 				}
 				cout << endl;
 			}

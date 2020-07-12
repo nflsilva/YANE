@@ -17,15 +17,13 @@ ppu_bus::~ppu_bus(){
 
 void ppu_bus::write(ui16_t address, ui8_t byte){
 	
+	address &= 0x3FFF;
+	
 	if(address >= 0x0000 && address <= 0x1FFF){
 		//Pattern Memory
 		_cartridge->write(address, byte);
 	}
 	else if(address >= 0x2000 && address <= 0x2FFF) {
-		
-		if(address == 0x2008)
-			cout << hex << (int)address << " " << (int)byte << endl;
-			
 		//Name Table
 		ram* target_name_table;
 		if(_cartridge->get_header()->get_mapper1() & 0x01){
@@ -65,12 +63,13 @@ void ppu_bus::write(ui16_t address, ui8_t byte){
 		else if(address == 0x0014) address = 0x0004;
 		else if(address == 0x0018) address = 0x0008;
 		else if(address == 0x001C) address = 0x000C;
-		
 		_vram_palette_table->write(address, byte);
 	}
 
 }
 ui8_t ppu_bus::read(ui16_t address){
+	
+	address &= 0x3FFF;
 	
 	if(address >= 0x0000 && address <= 0x1FFF){
 		//Pattern Memory

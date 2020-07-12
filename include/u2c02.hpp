@@ -8,7 +8,7 @@
 
 class u2c02
 {
-public:
+private:
 
 	//$2000 PPU CTRL
 	union {
@@ -28,10 +28,10 @@ public:
 	union {
 		struct {
 			bool grayscale : 1;
-			bool show_leftmost_background : 1;
-			bool show_leftmost_sprites : 1;
-			bool show_background : 1;
-			bool show_sprites : 1;
+			bool render_leftmost_background : 1;
+			bool render_leftmost_sprites : 1;
+			bool render_background : 1;
+			bool render_sprites : 1;
 			
 			bool emphasize_red : 1;
 			bool emphasize_green : 1;
@@ -55,19 +55,16 @@ public:
 	ui8_t _ppudata;
 	ui8_t _ppudata_buffer;
 	
+	ui16_t _current_cycle;
+	ui16_t _current_scanline;
 	
 	bool _address_latch;
-	bool _should_nmi_cpu;
+	bool _call_nmi_cpu;
 	bool _completed_frame;
 	bool _is_visible;
 
 
 	ppu_bus* _bus;
-
-	
-	ui8_t _current_r;
-	ui8_t _current_c;
-	ui8_t _nt_buffer[30][32];
 
 	
 public:
@@ -76,10 +73,18 @@ public:
 	
 	
 	void clock();
-	bool should_nmi();
+	bool call_nmi();
+	
+	bool completed_frame();
 
 	ui8_t read(ui16_t address);
 	void write(ui16_t address, ui8_t _data);
+	
+private:
+
+	//Helpers
+	bool is_rendering();
+	
 	
 
 };

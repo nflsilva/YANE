@@ -17,7 +17,7 @@ nes_test::~nes_test(){
 bool nes_test::run_test(){
 	
 	
-	bool verbose = false;
+	bool verbose = true;
 	char* file_name = (char*)"resources/nestest.log";
 	
 	std::ifstream infile(file_name);

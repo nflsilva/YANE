@@ -27,11 +27,11 @@ bool nes_console::clock(){
 	
 	_ppu->clock();
 	
-	if(_clock_cycles % 3){
+	if((_clock_cycles % 3) == 0){
 		_cpu->clock();
 	}
 	
-	if(_ppu->should_nmi()){
+	if(_ppu->call_nmi()){
 		_cpu->nmi();
 	}
 	

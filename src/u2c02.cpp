@@ -7,15 +7,15 @@ _ppudata(0),
 
 _ppudata_buffer(0),
 
+_current_cycle(0),
+_current_scanline(0),
+
 _address_latch(false), 
-_should_nmi_cpu(false),
+_call_nmi_cpu(false),
 _completed_frame(false),
 _is_visible(false),
 
-_bus(b),
-
-_current_r(0),
-_current_c(0)
+_bus(b)
 
 {
 	
@@ -29,37 +29,54 @@ u2c02::~u2c02(){
 }
 
 
-bool u2c02::should_nmi(){
-	return _should_nmi_cpu;
+bool u2c02::call_nmi(){
+	bool d = _call_nmi_cpu;
+	_call_nmi_cpu = false;
+	return d;
+}
+bool u2c02::completed_frame(){
+	bool d = _completed_frame;
+	_completed_frame = false;
+	return d;
 }
 
 void u2c02::clock(){
 	
 
 	
-	_nt_buffer[_current_r][_current_c] = _bus->read(0x2000 + _current_c + _current_r * 32);
-	_current_c++;
-	if(_current_c == 32){
-		_current_c = 0;
-		_current_r++;
-		if(_current_r == 30){
-			_current_r = 0;
-			_completed_frame = true;
+	if(_current_scanline == 241 && _current_cycle == 1){
+		_ppustatus.vertical_blank = true;
+		if(_ppuctrl.generate_nmi){
+			_call_nmi_cpu = true;
 		}
 	}
+	else if(_current_scanline == 261 && _current_cycle == 1){
+		_ppustatus.vertical_blank = false;
+	}
+	
+	
+	_current_cycle++;
+	if(_current_cycle == 341){
+		
+		_current_cycle = 0;
+		_current_scanline++;
+
+		if(_current_scanline == 261){
+			_current_scanline = 0;
+			_completed_frame = true;
+		}
+		
+	}
+	
 	
 }
 
 ui8_t u2c02::read(ui16_t address){
 
-	address &= 0x3FFF;
-	
 	switch(address){
 		case 2: {
-			
-			_ppustatus.vertical_blank = true;
 			ui8_t data = _ppustatus.data;
-			
+		
 			_ppustatus.vertical_blank = false;
 			_address_latch = false;
 			
@@ -75,12 +92,10 @@ ui8_t u2c02::read(ui16_t address){
 		case 7: {
 			_ppudata = _ppudata_buffer;
 			_ppudata_buffer = _bus->read(_ppuaddr);
-			
 			if(_ppuaddr >= 0x3F00){
 				_ppudata = _ppudata_buffer;
 			}
-			
-			//_ppuaddr += (_ppuctrl.vram_address_increment ? 31 : 1);
+			_ppuaddr += (_ppuctrl.vram_address_increment ? 32 : 1);
 			return _ppudata;
 		}
 	}
@@ -89,8 +104,6 @@ ui8_t u2c02::read(ui16_t address){
 }
 void u2c02::write(ui16_t address, ui8_t data){
 
-	address &= 0x3FFF;
-	
 	switch(address){
 		case 0:
 			_ppuctrl.data = data;
@@ -115,7 +128,6 @@ void u2c02::write(ui16_t address, ui8_t data){
 				_ppuaddr = (_ppuaddr & 0x00FF) | (data << 8);
 				_address_latch = true;
 			}
-		
 			break;
 		case 7:
 			_bus->write(_ppuaddr, data);
@@ -125,3 +137,8 @@ void u2c02::write(ui16_t address, ui8_t data){
 	
 }
 
+
+
+bool u2c02::is_rendering(){
+	return _ppumask.render_background || _ppumask.render_sprites;
+}

@@ -43,7 +43,6 @@ private:
 	r6502_instruction instructions[16][16];
 	unordered_set<ui8_t> cross_pages_instructions;
 	
-	
 	bool _is_implied;
 	ui8_t _operand_value;
 	ui16_t _operand_address;
@@ -53,7 +52,10 @@ private:
 	ui32_t _total_cycles;
 	
 	
+	
 public:
+
+	bool __print;
 
 	r6502(cpu_bus* bus);
 	~r6502();
@@ -204,17 +206,16 @@ private:
 	ui8_t tas_operation();
 	ui8_t xaa_operation();
 	
+
 	
-	
-	
+	void fetch_operand();
 	void push(ui8_t data);
 	ui8_t pop();
 	
 	
-	//void  change_execution_context(ui16_t vector, bool push_pc, bool set_b);
 	ui8_t cross_pages_cycles(ui16_t base_address, ui16_t indexed_address);
 	ui8_t perform_branch();
-	
+	void asdc_operation(bool is_subtraction);
 	
 };
 
