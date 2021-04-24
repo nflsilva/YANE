@@ -1,6 +1,6 @@
 #include "nes_console.hpp"
 
-nes_console::nes_console(cartridge* c) : _cartridge(c), _clock_cycles(0){
+nes_console::nes_console(cartridge* c) : _cartridge(c), _clock_cycles(0), instructionNeedsPrint(true) {
 	
 	_vram_pt = new ram(32);
 	_vram_nt_0 = new ram(1 * 1024);
@@ -25,16 +25,23 @@ bool nes_console::clock(){
 	
 	
 	
-	_ppu->clock();
-	
+
 	if((_clock_cycles % 3) == 0){
-		_cpu->clock();
+		
+		if(_cpu->clock()) {
+			//_ppu->debug();
+		}
+			
+		
 	}
+
+	_ppu->clock();
 	
 	if(_ppu->call_nmi()){
 		_cpu->nmi();
 	}
 	
+
 	_clock_cycles++;
 	
 	

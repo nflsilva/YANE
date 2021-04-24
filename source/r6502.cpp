@@ -340,9 +340,13 @@ r6502::~r6502(){
 
 bool r6502::clock(){
 
+
 	bool r = false;
 	
 	if(_operation_cycles == 0) {
+
+		//debug();
+
 		_operation_opcode = read(_register_PC++);
 		
 		ui8_t (r6502::* addressing)(void) = NULL;
@@ -358,12 +362,15 @@ bool r6502::clock(){
 		_is_implied = false;
 		
 		_operation_cycles += (this->*addressing)();
-	
 		_operation_cycles += (this->*operation)();
 		
+		_operation_cycles = max(2, (_operation_cycles - 1));
+		_total_cycles += _operation_cycles;
 		
-		_total_cycles += max(2, (_operation_cycles - 1));
+		
+
 		r = true;
+		
 	}
 	_operation_cycles--;
 	

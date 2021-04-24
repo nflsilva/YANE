@@ -72,7 +72,7 @@ private:
 	bool _address_latch;
 	bool _call_nmi_cpu;
 	bool _completed_frame;
-	bool _is_visible;
+	bool _isVisible;
 
 
 	ppu_bus* _bus;
@@ -87,6 +87,7 @@ public:
 	bool is_visible();
 	bool call_nmi();
 	bool completed_frame();
+	void debug();
 
 	void clock();
 

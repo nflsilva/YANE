@@ -13,7 +13,7 @@ class r6502
 		ui8_t (r6502::* addressing)(void);
 	};
 	
-private:
+public:
 
 	ui8_t _register_A;		//Accumulator
 	ui8_t _register_Y;		//Y Register
@@ -71,6 +71,7 @@ public:
 						);
 	
 	bool clock();
+
 
 	void nmi();
 	void reset();

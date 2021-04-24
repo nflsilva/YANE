@@ -22,7 +22,7 @@ _pattern_high_bit_shifter(0),
 _address_latch(false), 
 _call_nmi_cpu(false),
 _completed_frame(false),
-_is_visible(false),
+_isVisible(false),
 
 _bus(b)
 
@@ -37,32 +37,57 @@ _bus(b)
 u2c02::~u2c02(){
 }
 
-bool u2c02::is_visible(){
-	return _is_visible;
-}
+
 bool u2c02::call_nmi(){
 	bool d = _call_nmi_cpu;
 	_call_nmi_cpu = false;
 	return d;
 }
 bool u2c02::completed_frame(){
-	bool d = _completed_frame;
-	_completed_frame = false;
-	return d;
+	return _completed_frame;
+}
+bool u2c02::is_visible(){
+	return _isVisible;
+}
+
+
+void u2c02::debug(){
+	
+	std::stringstream ss;
+	ss << "PPU:";
+
+	if(_current_cycle > 9)
+		ss << " ";
+	if(_current_cycle > 99)
+		ss << " ";
+	ss << _current_cycle;
+	ss << ",";
+
+	if(_current_scanline > 9)
+		ss << " ";
+	if(_current_scanline > 99)
+		ss << " ";
+	ss << _current_scanline;
+
+	std::cout << ss.str() << std::endl;
+	
 }
 
 void u2c02::clock(){
 	
 
-	
+	// Compute pixel color;
 	if(_current_cycle >= 0 && _current_cycle < 257 && _current_scanline >=0 && _current_scanline < 240){
 
+		_isVisible = true;
 
 		ui8_t cycle_phase = _current_cycle % 8;
+
 		switch(cycle_phase){
 			case 0:
-
+			
 				_coarse_x = _current_cycle / 8;
+				_coarse_y = _current_scanline / 8;
 				
 				ui8_t nametable_number = 
 				((ui8_t)_ppuctrl.nametable_base_address_y) << 1 | 
@@ -89,21 +114,18 @@ void u2c02::clock(){
 		ui8_t high_pattern = _pattern_high_bit_shifter & 0x80 ? 0x1 : 0x0;
 		ui8_t pixel_value = high_pattern << 1 | low_pattern;
 
-
-		
-
 		_color_index = _bus->read(0x3F00 + (_palette_value * 4) + pixel_value);
 
 		_pattern_low_bit_shifter <<= 1;
 		_pattern_high_bit_shifter <<= 1;
-		_is_visible = true;
 
 	}
 	else {
-		_is_visible = false;
+		_isVisible = false;
 	}
-	
-	
+
+
+	// VBlank flag and NMI;
 	if(_current_scanline == 241 && _current_cycle == 1){
 		_ppustatus.vertical_blank = true;
 		if(_ppuctrl.generate_nmi){
@@ -114,20 +136,20 @@ void u2c02::clock(){
 		_ppustatus.vertical_blank = false;
 	}
 	
+	// Cycle and Scanline update logic;
 	_current_cycle++;
 	if(_current_cycle == 341){
-		
+
 		_current_cycle = 0;
 		_current_scanline++;
-		_coarse_y = _current_scanline / 8;
 
-		if(_current_scanline == 261){
+		if(_current_scanline == 262){
 			_current_scanline = 0;
-			_completed_frame = true;
 		}
-		
 	}
-	
+
+	// Is frame complete;
+	_completed_frame = _current_scanline == 240 && _current_cycle == 0;
 	
 }
 

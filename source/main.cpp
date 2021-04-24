@@ -1,110 +1,299 @@
-#include "yane.hpp"
-
+#include "../include/yane.hpp"
 #include "nes_console.hpp"
-#include "opengl_display.hpp"
+#include <chrono>
 
-void run_nestest_cpu(nes_console* console);
-void run_nestest_ppu();
+#define OLC_PGE_APPLICATION
+#include "olcPixelGameEngine.h"
+
+#define NES_VIDEO_WIDGTH 256
+#define NES_VIDEO_HEIGHT 240
+
+class PixelDisplay : public olc::PixelGameEngine
+{
+private:
 
 
 
+	GLfloat* _pal_screen_colors;
+	ui8_t* _frame;
 
-void draw_square(float* frame, int x, int y, float* color){
-	
-	int base_x = x * 4;
-	int base_y = y * GL_DISPLAY_WIDTH * 4;
-	
-	for(int fr = 0; fr < 8; fr++){
-		int offset_y = fr * GL_DISPLAY_WIDTH * 4;
-		for(int fc = 0; fc < 8; fc++){
+
+public:
+	PixelDisplay(ui8_t* frameColors)
+	{
+		sAppName = "Example";
+		_frame = frameColors;
+		_pal_screen_colors = new GLfloat[192] {
+			84, 84, 84, 
+			0, 30, 116,
+			8, 16, 144,
+			48, 0, 136,
+			68, 0, 100,
+			92, 0, 48,
+			84, 4, 0,
+			60, 24, 0,
+			32, 42, 0,
+			8, 58, 0,
+			0, 64, 0,
+			0, 60, 0,
+			0, 50, 60,
+			0, 0, 0,
+			0, 0, 0,
+			0, 0, 0,
 			
-			int offset_x = fc * 4;
-			
-			frame[base_x + offset_x + base_y + offset_y + 0] = color[0];
-			frame[base_x + offset_x + base_y + offset_y + 1] = color[1];
-			frame[base_x + offset_x + base_y + offset_y + 2] = color[2];
-			frame[base_x + offset_x + base_y + offset_y + 3] = 1.0;
+			152, 150, 152,
+			8, 76, 196,
+			48, 50, 236,
+			92, 30, 228,
+			136, 20, 176,
+			160, 20, 100,
+			152, 34, 32,
+			120, 60, 0,
+			84, 90, 0,
+			40, 114, 0,
+			8, 124, 0,
+			0, 118, 40,
+			0, 102, 120,
+			0, 0, 0,
+			0, 0, 0,
+			0, 0, 0,
+
+			236, 238, 236,
+			76, 154, 236,
+			120, 124, 236,
+			176, 98, 236,
+			228, 84, 236,
+			236, 88, 180,
+			236, 106, 100,
+			212, 136, 32,
+			160, 170, 0,
+			116, 196, 0,
+			76, 208, 32,
+			56, 204, 108,
+			56, 180, 204,
+			60, 60, 60,
+			0, 0, 0,
+			0, 0, 0,
+
+			236, 238, 236,
+			168, 204, 236,
+			188, 188, 236,
+			212, 178, 236,
+			236, 174, 236,
+			236, 174, 212,
+			236, 180, 176,
+			228, 196, 144,
+			204, 210, 120,
+			180, 222, 120,
+			168, 226, 144,
+			152, 226, 180,
+			160, 214, 228,
+			160, 162, 160,
+			0, 0, 0,
+			0, 0, 0,
+		};
+
+	}
+
+public:
+	bool OnUserCreate() override
+	{
+		// Called once at the start, so create things here
+		return true;
+	}
+
+	bool OnUserUpdate(float fElapsedTime) override
+	{
+
+
+		for (int x = 0; x < NES_VIDEO_WIDGTH; x++) {
+			for (int y = 0; y < NES_VIDEO_HEIGHT; y++) {
+
+				uint8_t color_index = _frame[x + y * NES_VIDEO_WIDGTH];
+
+				uint8_t pal_color_r = _pal_screen_colors[color_index * 3 + 0];
+				uint8_t pal_color_g = _pal_screen_colors[color_index * 3 + 1];
+				uint8_t pal_color_b = _pal_screen_colors[color_index * 3 + 2];
+
+				Draw(x, y, olc::Pixel(pal_color_r, pal_color_g, pal_color_b));
+
+			}
+				
 		}
+
+		return true;
 	}
-}
-void draw_palette(int palette_number, int y, float* frame, float* colors){
-	for(int p = 0; p < 4; p++){
-		draw_square(frame, (p + 1) * 10.0 + palette_number * 50.0, y,  	&colors[p * 3]);
+};
+
+bool run_nestest(nes_console* console){
+
+	console->get_cpu()->setup_state(0xC000, 0x24, 0xFD, 7);
+	bool verbose = true;
+	char* file_name = (char*)"resources/nestest.log";
+	
+	std::ifstream infile(file_name);
+	std::string line;
+	
+	while(std::getline(infile, line)){
+		
+		ui8_t op = (ui8_t)strtol(line.substr(6, 2).c_str(), NULL, 16); 
+		ui16_t pc = (ui16_t)strtol(line.substr(0, 4).c_str(), NULL, 16); 
+		ui8_t a = (ui8_t)strtol(line.substr(50, 2).c_str(), NULL, 16);  
+		ui8_t x = (ui8_t)strtol(line.substr(55, 2).c_str(), NULL, 16);  
+		ui8_t y = (ui8_t)strtol(line.substr(60, 2).c_str(), NULL, 16); 
+		ui16_t s = (ui16_t)strtol(line.substr(65, 2).c_str(), NULL, 16); 
+		ui8_t sp = (ui8_t)strtol(line.substr(71, 2).c_str(), NULL, 16); 
+		ui32_t cyc = (ui32_t)strtol(line.substr(90, line.length()-90).c_str(), NULL, 10);
+		
+		bool r = console->get_cpu()->compare_state(pc, a, x, y, s, sp, cyc);
+		
+		if(verbose){
+			console->get_cpu()->debug();
+		}
+
+		
+		if(!r) {
+			
+			if(verbose){
+				
+				std::stringstream ss;
+				ss << std::hex << pc;
+				std::string debug_string = "[" + ss.str() + "]";
+				
+				ss.str(std::string());
+				ss << std::hex << ((int)op);
+				debug_string += " " + ss.str();
+				
+				ss.str(std::string());
+				ss << std::hex << ((int)a);
+				debug_string += " A:" + ss.str();
+				
+				ss.str(std::string());
+				ss << std::hex << ((int)x);
+				debug_string += " X:" + ss.str();
+				
+				ss.str(std::string());
+				ss << std::hex << ((int)y);
+				debug_string += " Y:" + ss.str();
+
+				
+				ss.str(std::string());
+				ss << std::hex << (int)s;
+				debug_string += " P:" + ss.str();
+				
+				ss.str(std::string());
+				ss << std::hex << ((int)sp);
+				debug_string += " SP:" + ss.str();
+				
+
+				std::cout << debug_string
+				<< " CYC:" << ((int)cyc)
+				<< " \t "
+				<< " N:" << int((s & 0x80) != 0)
+				<< " V:" << int((s & 0x40) != 0)
+				<< " U:" << int((s & 0x20) != 0)
+				<< " B:" << int((s & 0x10) != 0)
+				<< " D:" << int((s & 0x08) != 0)
+				<< " I:" << int((s & 0x04) != 0)
+				<< " Z:" << int((s & 0x02) != 0)
+				<< " C:" << int((s & 0x01) != 0)
+				<< std::endl;
+				
+			}
+			
+
+			
+			
+			
+			return false;
+		}
+		
+		while(!console->get_cpu()->clock()){};
+
+		
 	}
-}
-void draw_square_in_screen_tile(float* frame, int tile_x, int tile_y, float* color){
-	draw_square(frame, tile_x * 8, tile_y * 8, color);
-}
-void tick(nes_console* console){
-	while(1){
-		console->clock();
-		std::this_thread::sleep_for(std::chrono::nanoseconds(600 / 16));
-	};
+	
+	
+	return true;
+
 }
 
+
+void consoleTick(nes_console* console, ui8_t* frame) {
+
+
+	int ppu_clock_time_ms = 46 * 1000;
+
+	while(1){
+
+		auto begin = std::chrono::high_resolution_clock::now();
+
+		console->clock();
+
+		if(console->_ppu->is_visible()) {
+
+			ui16_t x = console->_ppu->_current_cycle;
+			ui16_t y = console->_ppu->_current_scanline;
+			ui8_t color = console->_ppu->_color_index;
+
+
+			frame[x + y * NES_VIDEO_WIDGTH] = color;
+		}
+
+
+		auto end = std::chrono::high_resolution_clock::now();
+		int frame_time = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
+		int frame_delta = ppu_clock_time_ms - frame_time;
+
+		//std::this_thread::sleep_for(std::chrono::microseconds(ppu_clock_time_ms));
+
+	}
+
+}
 
 int main(int argc, char **argv){
 	
-	
-	char* file_name = (char*)"resources/dko.nes";
+	char* file_name = (char*)"resources/sl.nes";
 	cartridge* cart = new cartridge(file_name);
 	nes_console* console = new nes_console(cart);
+
+	ui8_t* frame = new uint8_t[NES_VIDEO_WIDGTH * NES_VIDEO_HEIGHT];
 	
+	console->_cpu->reset();
+	PixelDisplay display(frame);
+	if (!display.Construct(NES_VIDEO_WIDGTH, NES_VIDEO_HEIGHT, 1, 1))
+		return 0;
+
+	display.olc_UpdateWindowSize(NES_VIDEO_WIDGTH * 4, NES_VIDEO_HEIGHT * 4);
+	std::thread console_thread (consoleTick, console, frame);
+
+	display.Start();
+
+	console_thread.join();
+
+	/*
+	return 0;
 	
+
+
+	if(!run_nestest(console)) {
+		return false;
+	}
+
+	return 0;
 	
-	//run_nestest_cpu(console);
+
+	console->get_cpu()->setup_state(0xC000, 0x24, 0xFD, 7);
+	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 	
-	openGL_display* display = new openGL_display();
-	display->init();
-	
-	console->get_cpu()->reset();
-	while(1){
+	while(console->get_cpu()->_total_cycles < 26555){
 		console->clock();
-		//console->get_cpu()->debug();
-		
-		if(console->_ppu->is_visible()){
-			
-			ui16_t x = console->_ppu->_current_cycle;
-			ui16_t y = console->_ppu->_current_scanline;
-			ui8_t c = console->_ppu->_color_index;
-			/*
-			std::cout << (int)x;
-			std::cout << " ";
-			std::cout << (int)y;
-			std::cout << std::endl;
-			*/
-			display->notify_pixel(x, y, c);
-			
-			if(console->_ppu->completed_frame()){
-				display->draw_buffer();
-				
-				/*
-				for(int p = 0; p < 8; p++){
-					cout << hex << (int)console->_ppu_bus->read(0x3F00 + p * 4 + 0);
-					cout << " ";
-					cout << hex << (int)console->_ppu_bus->read(0x3F00 + p * 4 + 1);
-					cout << " ";
-					cout << hex << (int)console->_ppu_bus->read(0x3F00 + p * 4 + 2);
-					cout << " ";
-					cout << hex << (int)console->_ppu_bus->read(0x3F00 + p * 4 + 3);
-					cout << " | " << endl;
-				}
-				
-				for(int r = 0; r < 32; r++){
-					for(int c = 0; c < 32; c++){
-						cout << hex << (int)console->_ppu_bus->read(0x2000 + r * 32 + c);
-					}
-					cout << endl;
-				}
-				
-				
-				cin.ignore();*/
-				
-			}
-		}
-		//std::this_thread::sleep_for(std::chrono::nanoseconds(1));
-	};
-	
+	}
+
+	std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+	std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
+	*/
+
 	printf("Done!\n");
 	return 0;
 }
