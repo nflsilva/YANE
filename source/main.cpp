@@ -8,15 +8,13 @@
 #define NES_VIDEO_WIDGTH 256
 #define NES_VIDEO_HEIGHT 240
 
+bool isRunning;
+
 class PixelDisplay : public olc::PixelGameEngine
 {
 private:
-
-
-
 	GLfloat* _pal_screen_colors;
 	ui8_t* _frame;
-
 
 public:
 	PixelDisplay(ui8_t* frameColors)
@@ -95,7 +93,6 @@ public:
 
 	}
 
-public:
 	bool OnUserCreate() override
 	{
 		// Called once at the start, so create things here
@@ -104,8 +101,6 @@ public:
 
 	bool OnUserUpdate(float fElapsedTime) override
 	{
-
-
 		for (int x = 0; x < NES_VIDEO_WIDGTH; x++) {
 			for (int y = 0; y < NES_VIDEO_HEIGHT; y++) {
 
@@ -114,13 +109,18 @@ public:
 				uint8_t pal_color_r = _pal_screen_colors[color_index * 3 + 0];
 				uint8_t pal_color_g = _pal_screen_colors[color_index * 3 + 1];
 				uint8_t pal_color_b = _pal_screen_colors[color_index * 3 + 2];
+				uint8_t a = 255;
+				if((x % 8 == 0) || (y % 8 == 0)){
+					pal_color_r = 255;
+					pal_color_g = 255;
+					pal_color_b = 255;
+					a = 1;
+				}
 
-				Draw(x, y, olc::Pixel(pal_color_r, pal_color_g, pal_color_b));
+				Draw(x, y, olc::Pixel(pal_color_r, pal_color_g, pal_color_b, a));
 
-			}
-				
+			}	
 		}
-
 		return true;
 	}
 };
@@ -151,9 +151,7 @@ bool run_nestest(nes_console* console){
 			console->get_cpu()->debug();
 		}
 
-		
 		if(!r) {
-			
 			if(verbose){
 				
 				std::stringstream ss;
@@ -221,25 +219,18 @@ bool run_nestest(nes_console* console){
 
 void consoleTick(nes_console* console, ui8_t* frame) {
 
-
 	int ppu_clock_time_ms = 46 * 1000;
 
-	while(1){
+	while(isRunning){
 
 		auto begin = std::chrono::high_resolution_clock::now();
 
 		console->clock();
 
 		if(console->_ppu->is_visible()) {
-
-			ui16_t x = console->_ppu->_current_cycle;
-			ui16_t y = console->_ppu->_current_scanline;
-			ui8_t color = console->_ppu->_color_index;
-
-
-			frame[x + y * NES_VIDEO_WIDGTH] = color;
+			u2c02_pixel pixel = console->_ppu->get_pixel();
+			frame[pixel.x + pixel.y * NES_VIDEO_WIDGTH] = pixel.color_index;
 		}
-
 
 		auto end = std::chrono::high_resolution_clock::now();
 		int frame_time = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
@@ -252,47 +243,25 @@ void consoleTick(nes_console* console, ui8_t* frame) {
 }
 
 int main(int argc, char **argv){
-	
+
+	ui8_t* frame = new uint8_t[NES_VIDEO_WIDGTH * NES_VIDEO_HEIGHT];
+
 	char* file_name = (char*)"resources/sl.nes";
 	cartridge* cart = new cartridge(file_name);
 	nes_console* console = new nes_console(cart);
-
-	ui8_t* frame = new uint8_t[NES_VIDEO_WIDGTH * NES_VIDEO_HEIGHT];
-	
 	console->_cpu->reset();
+
 	PixelDisplay display(frame);
 	if (!display.Construct(NES_VIDEO_WIDGTH, NES_VIDEO_HEIGHT, 1, 1))
 		return 0;
 
+	isRunning = true;
 	display.olc_UpdateWindowSize(NES_VIDEO_WIDGTH * 4, NES_VIDEO_HEIGHT * 4);
 	std::thread console_thread (consoleTick, console, frame);
 
 	display.Start();
-
+	isRunning = false;
 	console_thread.join();
-
-	/*
-	return 0;
-	
-
-
-	if(!run_nestest(console)) {
-		return false;
-	}
-
-	return 0;
-	
-
-	console->get_cpu()->setup_state(0xC000, 0x24, 0xFD, 7);
-	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-	
-	while(console->get_cpu()->_total_cycles < 26555){
-		console->clock();
-	}
-
-	std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-	std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
-	*/
 
 	printf("Done!\n");
 	return 0;

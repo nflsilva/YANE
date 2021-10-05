@@ -2,9 +2,11 @@
 
 #include "ppu_bus.hpp"
 
-
-
-
+struct u2c02_pixel {
+	ui8_t color_index;
+	ui16_t x;
+	ui16_t y;
+};
 
 class u2c02
 {
@@ -54,37 +56,38 @@ private:
 	//$2007 PPU DATA
 	ui8_t _ppudata;
 	ui8_t _ppudata_buffer;
-	
-public:
+
+	u2c02_pixel _last_computed_pixel;
+
 	ui8_t _color_index;
 	ui16_t _current_cycle;
 	ui16_t _current_scanline;
-private: 
+
 	ui16_t _coarse_x;
 	ui16_t _coarse_y;
 	
-	ui8_t _pattern_low_bit_shifter;
-	ui8_t _pattern_high_bit_shifter;
-	ui8_t _palette_value;
+	ui8_t _next_pattern_byte;
+	ui8_t _next_attribute_byte;
+	ui8_t _next_pattern_low;
+	ui8_t _next_pattern_high;
+
+	ui16_t _pattern_low_bit_shifter;
+	ui16_t _pattern_high_bit_shifter;
 	
-	
-	
+	int nShifts;
 	bool _address_latch;
 	bool _call_nmi_cpu;
 	bool _completed_frame;
 	bool _isVisible;
 
-
 	ppu_bus* _bus;
 
-	
 public:
 	u2c02(ppu_bus* b);
 	~u2c02();
-	
-	
-	
+
 	bool is_visible();
+	u2c02_pixel get_pixel();
 	bool call_nmi();
 	bool completed_frame();
 	void debug();
