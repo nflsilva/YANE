@@ -2,12 +2,13 @@
 
 My implementation of a NES Emulator, using the most basic of interpretation methods.
 
-
-
 ## References
 --------------------------------------
-** R6502 CPU
+** GameEngine
+This project make heavy use of OneLoneCode's PixelGameEngine. Please check it out at the provided reference.
+- [olcPixelGameEngine] (https://github.com/OneLoneCoder/olcPixelGameEngine)
 
+** R6502 CPU
 - [General Information](https://en.wikipedia.org/wiki/MOS_Technology_6502)
 - [Datasheet 1](https://www.mdawson.net/vic20chrome/cpu/mos_6500_mpu_preliminary_may_1976.pdf)
 - [Datasheet 2](http://archive.6502.org/datasheets/rockwell_r650x_r651x.pdf)
@@ -22,7 +23,6 @@ My implementation of a NES Emulator, using the most basic of interpretation meth
 - [Nametables](https://wiki.nesdev.com/w/index.php/PPU_nametables)
 - [Attribute Memory](https://wiki.nesdev.com/w/index.php/PPU_attribute_tables)
 - [Rendering Cycle](https://wiki.nesdev.com/w/index.php/PPU_rendering)
-
 
 
 ** General
