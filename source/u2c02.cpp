@@ -76,7 +76,7 @@ void u2c02::debug(){
 
 void u2c02::clock(){
 	
-	bool in_normal_cycle = _current_cycle >= 0 && _current_cycle <= 256;
+	bool in_normal_cycle = _current_cycle >= 1 && _current_cycle <= 256;
 	bool in_pre_cycle = (_current_cycle >= 321 && _current_cycle <= 336);
 
 	bool in_visible_scanline = _current_scanline >= 0 && _current_scanline <= 239;
@@ -85,7 +85,7 @@ void u2c02::clock(){
 	if(in_read_scanline){
 
 		if(in_normal_cycle || in_pre_cycle){
-			
+
 			_pattern_low_bit_shifter <<= 1;
 			_pattern_high_bit_shifter <<= 1;
 			nShifts++;
@@ -94,18 +94,18 @@ void u2c02::clock(){
 
 			switch(cycle_phase){
 				case 0: {
+					_fine_x = 0;
 					_coarse_x = (_current_cycle / 8) + 2;
 					_coarse_y = (_current_scanline + (in_pre_cycle ? 1 : 0)) / 8;
 
-					if(in_pre_cycle){
-						cout << _current_cycle << " " << nShifts << endl;
-					}
-
 					_coarse_x %= 42;
-					//_coarse_y %= 30;
+					_coarse_y %= 30;
 
-					_pattern_low_bit_shifter = (_pattern_low_bit_shifter & 0xFF00) | (_next_pattern_low & 0XFF);
-					_pattern_high_bit_shifter = (_pattern_high_bit_shifter & 0xFF00) | (_next_pattern_high & 0XFF);
+					_pattern_low_bit_shifter = (_pattern_low_bit_shifter & 0xFF00) | (_next_pattern_low & 0xFF);
+					_pattern_high_bit_shifter = (_pattern_high_bit_shifter & 0xFF00) | (_next_pattern_high & 0xFF);
+
+					_current_attribute_byte = _pre_current_attribute_byte;
+					_pre_current_attribute_byte = _next_attribute_byte;
 
 					ui8_t nametable_number = ((ui8_t)_ppuctrl.nametable_base_address_y) << 1 | ((ui8_t)_ppuctrl.nametable_base_address_x);
 					ui16_t nametable_address = 0x2000 + nametable_number * 0x0400;
@@ -115,7 +115,7 @@ void u2c02::clock(){
 				case 2: {
 					ui8_t nametable_number = ((ui8_t)_ppuctrl.nametable_base_address_y) << 1 | ((ui8_t)_ppuctrl.nametable_base_address_x);
 					ui16_t nametable_address = 0x2000 + nametable_number * 0x0400;
-					_next_attribute_byte = _bus->read(nametable_address + 0x03C0 + _coarse_x / 4 + ((_coarse_y / 4) * 8));
+					_next_attribute_byte = _bus->read(nametable_address + 0x03C0 + (_coarse_x / 4) + ((_coarse_y / 4) * 8));
 					break;
 				}
 				case 4: {
@@ -132,22 +132,24 @@ void u2c02::clock(){
 					break;
 				}	
 			}
-
 		}
-
-		ui8_t attribute_x = (_coarse_x % 4) > 1 ? 0x1 : 0x0;
-		ui8_t attribute_y = (_coarse_y % 4) > 1 ? 0x1 : 0x0;
-		ui8_t attribute_xy = attribute_y << 1 | attribute_x;
-		ui8_t palette_value = (_next_attribute_byte >> (attribute_xy * 2)) & 0x03;
-
-		ui8_t low_pattern = _pattern_low_bit_shifter & 0x8000 ? 0x1 : 0x0;
-		ui8_t high_pattern = _pattern_high_bit_shifter & 0x8000 ? 0x1 : 0x0;
-		ui8_t pixel_value = high_pattern << 1 | low_pattern;
-
-		_last_computed_pixel.color_index = _bus->read(0x3F00 + (palette_value * 4) + pixel_value);
-		_last_computed_pixel.x = _current_cycle;
-		_last_computed_pixel.y = _current_scanline;
 	}
+
+	ui8_t attribute_x = (((_current_cycle - 1) / 8) % 4) > 1 ? 0x1 : 0x0;
+	ui8_t attribute_y = ((_current_scanline / 8) % 4) > 1 ? 0x1 : 0x0;
+	ui8_t attribute_xy = attribute_y << 1 | attribute_x;
+	ui8_t palette_value = (_current_attribute_byte >> (attribute_xy * 2)) & 0x03;
+
+	ui8_t low_pattern = _pattern_low_bit_shifter & 0x8000 ? 0x1 : 0x0;
+	ui8_t high_pattern = _pattern_high_bit_shifter & 0x8000 ? 0x1 : 0x0;
+	ui8_t pixel_value = (high_pattern << 1) | low_pattern;
+
+	_last_computed_pixel.color_index = _bus->read(0x3F00 + (palette_value * 4) + pixel_value);
+	_last_computed_pixel.x = _current_cycle - 1;
+	_last_computed_pixel.y = _current_scanline;
+
+	_fine_x++;
+
 
 	_isVisible = in_normal_cycle && in_visible_scanline;
 
@@ -168,7 +170,6 @@ void u2c02::clock(){
 
 		_current_cycle = 0;
 		_current_scanline++;
-
 		if(_current_scanline == 262){
 			_current_scanline = 0;
 		}

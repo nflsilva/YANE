@@ -65,6 +65,8 @@ private:
 
 	ui16_t _coarse_x;
 	ui16_t _coarse_y;
+	ui8_t _fine_x;
+	ui8_t _fine_y;
 	
 	ui8_t _next_pattern_byte;
 	ui8_t _next_attribute_byte;
@@ -73,6 +75,8 @@ private:
 
 	ui16_t _pattern_low_bit_shifter;
 	ui16_t _pattern_high_bit_shifter;
+	ui8_t _pre_current_attribute_byte;
+	ui8_t _current_attribute_byte;
 	
 	int nShifts;
 	bool _address_latch;

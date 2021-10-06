@@ -110,14 +110,14 @@ public:
 				uint8_t pal_color_g = _pal_screen_colors[color_index * 3 + 1];
 				uint8_t pal_color_b = _pal_screen_colors[color_index * 3 + 2];
 				uint8_t a = 255;
-				/*
-				if((x % 8 == 0) || (y % 8 == 0)){
+				
+				/*if((x < 8) && (y < 8)){
 					pal_color_r = 255;
 					pal_color_g = 255;
 					pal_color_b = 255;
-					a = 1;
-				}
-				*/
+					a = 100;
+				}*/
+				
 				Draw(x, y, olc::Pixel(pal_color_r, pal_color_g, pal_color_b, a));
 
 			}	
@@ -230,6 +230,10 @@ void consoleTick(nes_console* console, ui8_t* frame) {
 
 		if(console->_ppu->is_visible()) {
 			u2c02_pixel pixel = console->_ppu->get_pixel();
+			int x = pixel.x;
+			int y = pixel.y;
+			int color_index = pixel.color_index;
+
 			frame[pixel.x + pixel.y * NES_VIDEO_WIDGTH] = pixel.color_index;
 		}
 
@@ -247,7 +251,7 @@ int main(int argc, char **argv){
 
 	ui8_t* frame = new uint8_t[NES_VIDEO_WIDGTH * NES_VIDEO_HEIGHT];
 
-	char* file_name = (char*)"resources/sl.nes";
+	char* file_name = (char*)"resources/ic.nes";
 	cartridge* cart = new cartridge(file_name);
 	nes_console* console = new nes_console(cart);
 	console->_cpu->reset();
