@@ -251,7 +251,7 @@ int main(int argc, char **argv){
 
 	ui8_t* frame = new uint8_t[NES_VIDEO_WIDGTH * NES_VIDEO_HEIGHT];
 
-	char* file_name = (char*)"resources/ic.nes";
+	char* file_name = (char*)"resources/bf.nes";
 	cartridge* cart = new cartridge(file_name);
 	nes_console* console = new nes_console(cart);
 	console->_cpu->reset();

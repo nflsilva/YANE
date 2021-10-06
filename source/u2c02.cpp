@@ -99,7 +99,7 @@ void u2c02::clock(){
 					_coarse_y = (_current_scanline + (in_pre_cycle ? 1 : 0)) / 8;
 
 					_coarse_x %= 42;
-					_coarse_y %= 30;
+					_coarse_y %= 32;
 
 					_pattern_low_bit_shifter = (_pattern_low_bit_shifter & 0xFF00) | (_next_pattern_low & 0xFF);
 					_pattern_high_bit_shifter = (_pattern_high_bit_shifter & 0xFF00) | (_next_pattern_high & 0xFF);
