@@ -6,7 +6,7 @@ My implementation of a NES Emulator, using the most basic of interpretation meth
 --------------------------------------
 ** GameEngine
 This project make heavy use of OneLoneCode's PixelGameEngine. Please check it out at the provided reference.
-- [olcPixelGameEngine] (https://github.com/OneLoneCoder/olcPixelGameEngine)
+- [olcPixelGameEngine](https://github.com/OneLoneCoder/olcPixelGameEngine)
 
 ** R6502 CPU
 - [General Information](https://en.wikipedia.org/wiki/MOS_Technology_6502)

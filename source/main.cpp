@@ -110,13 +110,14 @@ public:
 				uint8_t pal_color_g = _pal_screen_colors[color_index * 3 + 1];
 				uint8_t pal_color_b = _pal_screen_colors[color_index * 3 + 2];
 				uint8_t a = 255;
+				/*
 				if((x % 8 == 0) || (y % 8 == 0)){
 					pal_color_r = 255;
 					pal_color_g = 255;
 					pal_color_b = 255;
 					a = 1;
 				}
-
+				*/
 				Draw(x, y, olc::Pixel(pal_color_r, pal_color_g, pal_color_b, a));
 
 			}	

@@ -76,15 +76,15 @@ void u2c02::debug(){
 
 void u2c02::clock(){
 	
-	bool is_in_visible_cycle = _current_cycle >= 0 && _current_cycle <= 256;
-	bool is_in_read_cycle = (_current_cycle >= 321 && _current_cycle <= 336);
+	bool in_normal_cycle = _current_cycle >= 0 && _current_cycle <= 256;
+	bool in_pre_cycle = (_current_cycle >= 321 && _current_cycle <= 336);
 
-	bool is_in_visible_scanline = _current_scanline >= 0 && _current_scanline <= 239;
-	bool is_in_read_scanline =  is_in_visible_scanline || _current_scanline == 261;
+	bool in_visible_scanline = _current_scanline >= 0 && _current_scanline <= 239;
+	bool in_read_scanline =  in_visible_scanline || _current_scanline == 261;
 
-	if(is_in_read_scanline){
+	if(in_read_scanline){
 
-		if(is_in_visible_cycle || is_in_read_cycle){
+		if(in_normal_cycle || in_pre_cycle){
 			
 			_pattern_low_bit_shifter <<= 1;
 			_pattern_high_bit_shifter <<= 1;
@@ -95,9 +95,9 @@ void u2c02::clock(){
 			switch(cycle_phase){
 				case 0: {
 					_coarse_x = (_current_cycle / 8) + 2;
-					_coarse_y = _current_scanline / 8;
+					_coarse_y = (_current_scanline + (in_pre_cycle ? 1 : 0)) / 8;
 
-					if(is_in_read_cycle){
+					if(in_pre_cycle){
 						cout << _current_cycle << " " << nShifts << endl;
 					}
 
@@ -120,14 +120,12 @@ void u2c02::clock(){
 				}
 				case 4: {
 					ui16_t pattern_address = _ppuctrl.background_pattern_base_address ? 0x1000 : 0x0000;
-					ui16_t csl = _current_scanline + (false ? 1 : 0);
-					_next_pattern_low = _bus->read(pattern_address + (_next_pattern_byte * 16) + (csl % 8) + 0);
+					_next_pattern_low = _bus->read(pattern_address + (_next_pattern_byte * 16) + ((_current_scanline + (in_pre_cycle ? 1 : 0)) % 8) + 0);
 					break;
 				}
 				case 6: {
 					ui16_t pattern_address = _ppuctrl.background_pattern_base_address ? 0x1000 : 0x0000;
-					ui16_t csl = _current_scanline + (false ? 1 : 0);
-					_next_pattern_high = _bus->read(pattern_address + (_next_pattern_byte * 16) + (csl % 8) + 8);
+					_next_pattern_high = _bus->read(pattern_address + (_next_pattern_byte * 16) + ((_current_scanline + (in_pre_cycle ? 1 : 0)) % 8) + 8);
 					break;
 				}
 				default: {
@@ -151,7 +149,7 @@ void u2c02::clock(){
 		_last_computed_pixel.y = _current_scanline;
 	}
 
-	_isVisible = is_in_visible_cycle && is_in_visible_scanline;
+	_isVisible = in_normal_cycle && in_visible_scanline;
 
 	// VBlank flag and NMI;
 	if(_current_scanline == 241 && _current_cycle == 1){
